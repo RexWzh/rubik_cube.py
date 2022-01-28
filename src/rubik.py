@@ -4,7 +4,7 @@ import time
 from tools import *    
 
 class Cube():
-    def __init__(self, standard=True):
+    def __init__(self, standard: bool = True, interval:float = 0.13):
         """[summary]
 
         Args:
@@ -19,7 +19,7 @@ class Cube():
         self.center, self.left, self.right, self.down = cube_initialize(standard)
         self._init_facet_positions()
         self._init_operate_dict()
-        self.interval = 0.13 # 操作时间间隔
+        self.interval = interval # 操作时间间隔
     
     def auto_solve_cube(self, wait=True):
         """自动求解魔方
@@ -31,6 +31,7 @@ class Cube():
         print("魔方识别完毕")
         solution = kb.solve(cube_code).split()
         print("还原需要 %d 步"%len(solution))
+        time.sleep(.4)
         if wait:
             input("按回车开始还原魔方")
         for op in solution:
