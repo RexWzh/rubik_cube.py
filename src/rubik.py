@@ -30,7 +30,7 @@ class Cube():
         cube_code = self.get_cube_distribution(string_code = True)
         print("魔方识别完毕")
         solution = kb.solve(cube_code).split()
-        print("一共需要 %d 步"%len(solution))
+        print("还原需要 %d 步"%len(solution))
         if wait:
             input("按回车开始还原魔方")
         for op in solution:
@@ -54,10 +54,13 @@ class Cube():
         if sides is None:
             sides = [0, 1, 2]
         if 0 in sides:
+            print("正在检查顶面，注意查看鼠标位置是否准确")
             check_positions(self.ups)
         if 1 in sides:
+            print("正在检查左侧面，注意查看鼠标位置是否准确")
             check_positions(self.lefts)
         if 2 in sides:
+            print("正在检查右侧面，注意查看鼠标位置是否准确")
             check_positions(self.rights)
         return 
     
@@ -95,7 +98,6 @@ class Cube():
         # 扭转后的界面
         face_B, face_R, face_D = face_U, [face_L[i-1] for i in (7,4,1,8,5,2,9,6,3)], face_F[::-1]
         return face_B, face_R, face_D
-    
     
     def get_cube_distribution(self, string_code=False) -> list:
         """获取魔方的分布信息

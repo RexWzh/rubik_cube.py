@@ -7,6 +7,7 @@ from data import *
 魔方图像操作和运算的函数工具
 """
 
+
 array_to_tuple = lambda arr: tuple(int(i) for i in arr)
 array_to_tuple.__doc__ = """将 <numpy 数组> 转化为 <整型元组>
 
@@ -22,6 +23,7 @@ Args:
    - 整数输入不能支持 `numpy.int64` 类型
 """
 
+
 facets_to_tuple = lambda facets:[array_to_tuple(i) for line in facets for i in line]
 facets_to_tuple.__doc__ = """二维列表展平，并将数据类型从 <numpy 数组> 化为 <整型元组>
 
@@ -31,6 +33,7 @@ Args:
     Returns:
        list(tuple(int)): 整型元组构成的一维列表列表
 """
+
 
 diff = lambda c1, c2: sum(abs(i - j) for i, j in zip(c1, c2))
 diff.__doc__ = """计算位置差的绝对值之和
@@ -42,6 +45,7 @@ Args:
     Returns:
        int: 位置差的绝对值之和
 """
+
 
 def cube_initialize(standard: bool = True):
     """获取魔方位置信息
