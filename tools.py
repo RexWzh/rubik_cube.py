@@ -6,22 +6,41 @@ from data import *
 魔方图像操作和运算的函数工具
 """
 
+array_to_tuple = lambda arr: tuple(int(i) for i in arr)
+array_to_tuple.__doc__ = """将 <numpy 数组> 转化为 <整型元组>
 
-"""
-将 <numpy 数组> 转化为 <整型元组>
-说明：一些操作不能直接用 numpy 的数组类型，整数不能使用 `numpy.int64` 类型，此函数用于转化数据格式
-"""
-array_to_tuple = lambda arr:tuple(int(i) for i in arr)
+Args:
+    arr (numpy.ndarray): numpy 数组
 
+    Returns:
+       tuple(int): 整型元组
+       
+说明：
+   - 此函数用于转化数据格式
+   - 一些输入不能支持 numpy 的数组类型
+   - 整数输入不能支持 `numpy.int64` 类型
 """
-将二维列表展平，同时将数据类型从 <numpy 数组> 化为 <整型元组>
-"""
+
 facets_to_tuple = lambda facets:[array_to_tuple(i) for line in facets for i in line]
+facets_to_tuple.__doc__ = """二维列表展平，并将数据类型从 <numpy 数组> 化为 <整型元组>
 
+Args:
+    facets (list(list(numpy.ndarray))): numpy 数组构成的二维列表
+
+    Returns:
+       list(tuple(int)): 整型元组构成的一维列表列表
 """
-比较两个颜色（长度为3的一维列表）的差异，返回值为像素差的绝对值和
-"""
+
 diff = lambda c1, c2: sum(abs(i - j) for i, j in zip(c1, c2))
+diff.__doc__ = """计算位置差的绝对值之和
+
+Args:
+    c1 (tuple(int)): 整数元组，表示颜色信息，长度为 3
+    c1 (tuple(int)): 整数元组，表示颜色信息，长度为 3
+
+    Returns:
+       int: 位置差的绝对值之和
+"""
 
 def cube_initialize(standard: bool = True):
     """获取魔方位置信息
@@ -60,11 +79,15 @@ def cube_initialize(standard: bool = True):
     left, right, down = [np.array(p) //3 for p in [[-l2, -l3], [l2, -l3], [0, l1]]]
     return center, left, right, down
 
+
 def check_positions(positions) -> None:
     """将鼠标依次移动到指定位置
 
     Args:
-        positions ([type]): [description]
+        positions (list(tuple(int))): 由若干二元元组构成的列表，记录位置信息
+    
+    Return:
+        None: 不返回值
     
     补充说明：
        - 移动的时间间隔为 0.2s
@@ -77,23 +100,35 @@ def check_positions(positions) -> None:
 
 
 def find_color(img, pos, side = 0) -> str:
-    """
-    1. 输入 `img` 以及位置 `pos`，返回对应像素点匹配的颜色
-       - `img` 由 `pyautogui.screenshot()` 截图获取，数据类型为 `PIL.PngImagePlugin.PngImageFile`
-       - `pos` 为元组，数据类型为整数
-    2. side 参数如下：
-       - 0 小面位于上方
-       - 1 小面位于左侧
-       - 2 小面位于右侧
-    3. 需注意的是，Google 插件的魔方图像中，同色块在三个方向的像素有较大区别，所以所在面匹配颜色信息，增加准确性。
+    """返回指定位置像素点匹配的颜色
+
+    Args:
+        img (PIL.PngImagePlugin.PngImageFile): `pyautogui.screenshot()` 的截图图像
+        pos (tuple(int, int)): 像素位置
+        side (int, optional): 像素所在位置. Defaults to 0.
+
+    Returns:
+        str: 匹配到的颜色，比如 white
+    
+    补充说明：
+       1. side 参数如下：
+          - 0 小面位于上方
+          - 1 小面位于左侧
+          - 2 小面位于右侧
+       2. Google 插件的魔方图像中，同色块在三个方向的像素有较大区别，所以匹配所在面的颜色信息，增加准确性。
     """
     color = img.getpixel(pos)
     return min(colors.keys(), key = lambda c: diff(colors[c][side], color))
 
 
 def reverse_operation(op: str) -> str:
-    """
-    将魔方操作转为逆操作
+    """将魔方操作转为逆操作
+    
+    Args:
+        op (str): 魔方操作的字符
+
+    Returns:
+        str: 逆操作的字符
     """
     if len(op) == 1:
         return op + "'"
@@ -101,7 +136,17 @@ def reverse_operation(op: str) -> str:
         return op[0]
     return op
 
-"""
-将魔方系列操作转为逆操作，用于生成给定的魔方（还原状态 + 逆操作 = 给定状态）
-"""
+
 reverse_operations = lambda solution:[reverse_operation(op) for op in solution[::-1]]
+reverse_operations.__doc__ = """将魔方系列操作转为逆操作
+
+Args:
+    solution (list(str)): 魔方操作列表
+
+    Returns:
+        list(str)： 给定操作的逆操作列表
+
+说明：
+   - 用于生成给定的魔方
+   - 还原状态 + 逆操作 = 给定状态
+"""

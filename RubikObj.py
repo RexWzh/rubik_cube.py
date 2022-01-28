@@ -1,15 +1,17 @@
 import pyautogui as pg
 import kociemba as kb
 import time
-from tools import *
-
+from tools import *    
 
 class Cube():
     def __init__(self, standard=True):
         """[summary]
 
         Args:
-            standard (bool, optional): [description]. Defaults to True.
+            standard (bool, optional): data initialize. Defaults to True.
+        
+        初始化内容：
+           - 
         """
         self.center, self.left, self.right, self.down = cube_initialize(standard)
         self.init_facet_positions()
