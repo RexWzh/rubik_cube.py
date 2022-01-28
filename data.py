@@ -1,6 +1,7 @@
 # 颜色和小面位置相互转化（字典）
 color_to_facet = {"white":"U", "red":"L", "blue":"F", "green":"B", "orange":"R", "yellow":"D"}
 facet_to_color = {val:key for key, val in color_to_facet.items()}
+
 # 上，左，右，处在三个位置时各颜色的数值
 colors = {'white': ((252, 244, 252), (222, 215, 222), (198, 192, 198)),
          'red': ((236, 56, 35), (208, 50, 30), (186, 44, 27)),

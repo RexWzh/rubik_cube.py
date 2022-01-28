@@ -11,55 +11,48 @@ class Cube():
             standard (bool, optional): data initialize. Defaults to True.
         
         初始化内容：
-           - 
+           - 图像正中心位置，以及三个方向： center, left, right, down
+           - 三个魔方面的小面位置： lefts, rights, ups
+           - 运算需要的数值信息（字典）： operate_dict
+           - 运算的时间间隔： interval
         """
         self.center, self.left, self.right, self.down = cube_initialize(standard)
-        self.init_facet_positions()
-        self.init_operate_dict()
+        self._init_facet_positions()
+        self._init_operate_dict()
         self.interval = 0.13 # 操作时间间隔
     
-    def init_facet_positions(self):
-        """初始化左，右，上，三面的小面位置"""
-        center, left, right, down = self.center, self.left, self.right, self.down
-        left_origin, right_origin, up_origin = [center + i // 2 for i in [left + down, right + down, left + right]]
-        lefts = [[left_origin + (2 - i) * left + j * down for i in range(3)] for j in range(3)]
-        rights = [[right_origin + i * right + j * down for i in range(3)] for j in range(3)]
-        ups = [[up_origin + i * right + (2 - j) * left for i in range(3)]for j in range(3)]
-        self.lefts = facets_to_tuple(lefts)
-        self.rights = facets_to_tuple(rights)
-        self.ups = facets_to_tuple(ups)
-        return
-    
-    def init_operate_dict(self):
-        """初始化基础运算信息"""
-        lefts, rights, ups = self.lefts, self.rights, self.ups
-        left, right, down = self.left, self.right, self.down
-        self.operate_dict = {"U":(lefts[1], array_to_tuple(left)),
-         "F":(lefts[5], array_to_tuple(-down)),
-         "L":(rights[3], array_to_tuple(down)),
-         "D":(rights[7], array_to_tuple(right)),
-         "B":(ups[1], array_to_tuple(-right)),
-         "R":(ups[5], array_to_tuple(left))}
-        return 
+    def auto_solve_cube(self, wait=True):
+        """自动求解魔方
         
-    def auto_solve_cube(self, ask=True):
-        """自动求解魔方"""
+        Args:
+            wait (bool, optional): wait for input. Defaults to True.
+        """
         cube_code = self.get_cube_distribution(string_code = True)
         print("魔方识别完毕")
         solution = kb.solve(cube_code).split()
         print("一共需要 %d 步"%len(solution))
-        if ask:
+        if wait:
             input("按回车开始还原魔方")
         for op in solution:
             self.cube_operate(op)
+        print("魔方已还原，请检查")
         return solution
-    
-    
+        
     ## 检查数据 ##
-    def check_facets(self, sides = None):
-        """检验小面位置，sides 0,1,2 分别对应顶面，左面，右面"""
+    def check_facets(self, sides = None) -> None:
+        """检验小面位置
+
+        Args:
+            sides (list(int), optional): 需要检查的魔方面. 默认检查三个面.
+
+        Returns:
+            None: 不返回值
+        
+        说明：
+           - 列表 sides 中， 0,1,2 分别对应顶面，左面，右面
+        """
         if sides is None:
-            sides = (0, 1, 2)
+            sides = [0, 1, 2]
         if 0 in sides:
             check_positions(self.ups)
         if 1 in sides:
@@ -68,10 +61,16 @@ class Cube():
             check_positions(self.rights)
         return 
     
-    def check_basic_moves(self):
-        """检验六个面的基础操作是否正确"""
-        for op in "UDLRFB":
-            print("当前面为", op)
+    def check_basic_moves(self, faces = None) -> None:
+        """检验基础旋转操作是否正确
+        
+        Args:
+            faces (str, optional): 需要检查的魔方面. 默认检查所有面.
+        """
+        if faces is None:
+            faces = "UDLRFB"
+        for op in faces:
+            print("当前正在旋转的面为", op)
             for i in ["", "'", "2"]:
                 self.cube_operate(op + i)
                 time.sleep(0.5)
@@ -79,7 +78,13 @@ class Cube():
     
     ## 函数工具 ##
     def color_distribution(self, im, shift = False, abbr = True):
-        """获取截图三面的颜色分布，shift 获取移动后的颜色分布，abbr 设置是否用简写输出(UDFBLR)"""
+        """获取截图三面的颜色分布
+        
+        Args:
+            im (PIL.PngImagePlugin.PngImageFile): 截图图像
+            shift (bool, optional): 当前魔方是否为翻转后的魔方. Defaults to False.
+            abbr (bool, optional): 是否返回简写(UDFBLR). Defaults to True.
+        """
         face_U = [find_color(im, p) for p in self.ups]
         face_L = [find_color(im, p, 1) for p in self.lefts]
         face_F = [find_color(im, p, 2) for p in self.rights]
@@ -90,13 +95,20 @@ class Cube():
         # 扭转后的界面
         face_B, face_R, face_D = face_U, [face_L[i-1] for i in (7,4,1,8,5,2,9,6,3)], face_F[::-1]
         return face_B, face_R, face_D
-        
-    def get_cube_distribution(self, string_code=False):
-        """获取魔方的分布信息，默认返回列表，可设置返回魔方字符"""
+    
+    
+    def get_cube_distribution(self, string_code=False) -> list:
+        """获取魔方的分布信息
+
+        Args:
+            string_code (bool, optional): 是否返回魔方字符代码. 默认返回字符代码构成的列表
+        Returns:
+            list/string: 返回字符列表，或者字符串
+        """
         img = pg.screenshot() # 截图
         U, L, F = self.color_distribution(img) # 获取初始三面
         self.shift_faces() # 切换背面
-        time.sleep(1)
+        time.sleep(0.5)
         img = pg.screenshot()
         B, R, D = self.color_distribution(img, shift=True) # 获取背面
         self.shift_faces(back=True) # 切回原来面
@@ -104,8 +116,12 @@ class Cube():
             return "".join(U) + "".join(R) + "".join(F) + "".join(D) + "".join(L) + "".join(B)
         return U, L, F, B, R, D
     
-    def shift_faces(self, back=False):
-        """左滑和上移"""
+    def shift_faces(self, back=False) -> None:
+        """左滑和上移，将魔方切换到背面
+        
+        Args:
+           back (bool, optional): 是否从背面返回正面，默认从正面到背面
+        """
         d = int(self.down[1])
         corner = array_to_tuple(self.center + (3 * d, 3 * d))
         seq = [(-d, 0), (-d, 0), (0, -d)] if not back else [(0, d), (d, 0), (d, 0)]
@@ -115,7 +131,11 @@ class Cube():
         return
     
     def cube_operate(self, op):
-        """将魔方字符转为具体操作"""
+        """将魔方字符转为具体操作
+        
+        Args:
+           op (str): 魔方操作的字符代码
+        """
         assert len(op) <= 2, "指令有误"
         operate_dict, interval = self.operate_dict, self.interval
         pos, rel = operate_dict[op[0]] # 位置以及相对位移
@@ -131,7 +151,11 @@ class Cube():
         return 
     
     def shift_center(self, back=False):
-        """换心公式"""
+        """换心公式
+        
+        Args:
+           back (bool, optional): 是否使用逆公式，默认否
+        """
         center = self.ups[4]
         left, right = self.left, self.right
         if not back:
@@ -143,8 +167,24 @@ class Cube():
             pg.dragRel(p[0], p[1], duration = 0.25)
         return
     
-    def to_cube_state(self, state):
-        """将状态化为给定状态"""
+    def to_cube_state(self, state: str) -> list:
+        """将打乱的魔方化为给定魔方状态，并求解
+        
+        Args:
+           state (str): 给定魔方状态的字符代码
+        
+        Returns:
+           list(str): 返回给定魔方状态的解法
+        
+        函数主要操作：
+           1. 用换心公式作用在打乱的魔方上
+           2. 忽略中心块，将魔方“还原”
+           3. 求输入状态的还原方法，并用逆操作施加在“还原”的魔方上
+           4. 用逆换心公式作用在得到的魔方上
+        
+        原理说明：
+           - 利用了换心公式与魔方的基本操作交换性
+        """
         current = self.get_cube_distribution(string_code = True)
         current_sol = kb.solve(current).split()
         state_sol = kb.solve(state).split()
@@ -159,6 +199,29 @@ class Cube():
             self.cube_operate(op)
         print("最后还原中心")
         self.shift_center(back=True)
+        print("给定状态已得到")
         return state_sol
 
-### 补充字符相关的操作和运算
+    def _init_facet_positions(self):
+        """初始化上，左，右，三面的小面位置"""
+        center, left, right, down = self.center, self.left, self.right, self.down
+        left_origin, right_origin, up_origin = [center + i // 2 for i in [left + down, right + down, left + right]]
+        lefts = [[left_origin + (2 - i) * left + j * down for i in range(3)] for j in range(3)]
+        rights = [[right_origin + i * right + j * down for i in range(3)] for j in range(3)]
+        ups = [[up_origin + i * right + (2 - j) * left for i in range(3)]for j in range(3)]
+        self.lefts = facets_to_tuple(lefts)
+        self.rights = facets_to_tuple(rights)
+        self.ups = facets_to_tuple(ups)
+        return
+    
+    def _init_operate_dict(self):
+        """初始化魔方基础运算需要的数据（字典）"""
+        lefts, rights, ups = self.lefts, self.rights, self.ups
+        left, right, down = self.left, self.right, self.down
+        self.operate_dict = {"U":(lefts[1], array_to_tuple(left)),
+         "F":(lefts[5], array_to_tuple(-down)),
+         "L":(rights[3], array_to_tuple(down)),
+         "D":(rights[7], array_to_tuple(right)),
+         "B":(ups[1], array_to_tuple(-right)),
+         "R":(ups[5], array_to_tuple(left))}
+        return 
