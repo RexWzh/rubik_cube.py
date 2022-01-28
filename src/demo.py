@@ -44,8 +44,11 @@ try:
     kb.solve(state) # 检验是否有效
 except:
     print("魔方代码输入有误！请检查")
-    print(state)
-    
+    print(expand_cube(state))
+print("输入魔方的展开图如下")
+print(expand_cube(state))
+
+
 standard = input("是否使用默认位置，默认是，否则输入 0:")
 standard = True if standard != "0" else False
 cube = Cube(standard=standard)

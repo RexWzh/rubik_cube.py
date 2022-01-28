@@ -155,3 +155,23 @@ Args:
    - 用于生成给定的魔方
    - 还原状态 + 逆操作 = 给定状态
 """
+
+def expand_cube(state: str = "") -> str:
+    """返回魔方状态的展开图
+
+    Args:
+        state (str, optional): 魔方状态. 默认空字符代表初始状态.
+
+    Returns:
+        str: 展开的魔方图
+        
+    还原状态：
+       - UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB
+    """
+    if not state: # 返回初始状态
+        state = init_txt
+    res = init_txt
+    for i,face in enumerate("URFDLB"):
+        for j in range(9):
+            res = res.replace(face + str(j+1), state[9 * i + j])
+    return res
