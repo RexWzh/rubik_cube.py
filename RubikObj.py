@@ -1,71 +1,16 @@
-# 用类编程处理数据
-import numpy as np
 import pyautogui as pg
 import kociemba as kb
 import time
+from tools import *
 
-# 颜色和小面位置相互转化（字典）
-color_to_facet = {"white":"U", "red":"L", "blue":"F", "green":"B", "orange":"R", "yellow":"D"}
-facet_to_color = {val:key for key, val in color_to_facet.items()}
-# 上，左，右，处在三个位置时各颜色的数值
-colors = {'white': ((252, 244, 252), (222, 215, 222), (198, 192, 198)),
-         'red': ((236, 56, 35), (208, 50, 30), (186, 44, 27)),
-         'blue': ((64, 168, 198), (56, 148, 174), (51, 132, 155)),
-         'green': ((128, 200, 55), (113, 176, 49), (101, 157, 44)),
-         'orange': ((252, 138, 10), (222, 122, 9), (198, 109, 8)),
-         'yellow': ((252, 237, 71), (222, 208, 63), (198, 186, 56))}
-# numpy 数组转化为元组
-array_to_tuple = lambda arr:tuple(int(i) for i in arr)
-# 小面集转化为元组
-facets_to_tuple = lambda facets:[array_to_tuple(i) for line in facets for i in line]
-# 比较两个颜色的差异
-diff = lambda c1, c2: sum(abs(i - j) for i, j in zip(c1, c2))
-
-def cube_initialize(standard: bool = True):
-    """初始化魔方位置信息"""
-    if standard: # 标准情形：图像置于左侧
-        center, l1 = np.array([535, 669]), 290
-    else: # 否则要求输入两个特定位置
-        input("按回车录入中心点位置")
-        center = np.array(pg.position())
-        input("按回车录入底部位置")
-        bottom = np.array(pg.position())
-        l1 = bottom[1] - center[1]
-        print("中心位置",center, "垂直长度", l1)
-    l2, l3 = l1 * 208 // 246, l1 * 122 // 246
-    left, right, down = [np.array(p) //3 for p in [[-l2, -l3], [l2, -l3], [0, l1]]]
-    return center, left, right, down
-
-def check_positions(positions):
-    """鼠标依次移动到给定位置-用于检验小面中心正确性"""
-    for p in positions:
-        time.sleep(0.2)
-        pg.moveTo(p)
-    return 
-
-def find_color(img, pos, side = 0):
-    """
-    匹配三维数组 color 对应的颜色
-    side 参数如下：
-       - 0 小面位于上方
-       - 1 小面位于左侧
-       - 2 小面位于右侧
-    """
-    color = img.getpixel(pos)
-    return min(colors.keys(), key = lambda c: diff(colors[c][side], color))
-
-def reverse_operation(op):
-    """获取操作的逆运算"""
-    if len(op) == 1:
-        return op + "'"
-    if op[-1] == "'":
-        return op[0]
-    return op
-
-reverse_operations = lambda solution:[reverse_operation(op) for op in solution[::-1]]
 
 class Cube():
     def __init__(self, standard=True):
+        """[summary]
+
+        Args:
+            standard (bool, optional): [description]. Defaults to True.
+        """
         self.center, self.left, self.right, self.down = cube_initialize(standard)
         self.init_facet_positions()
         self.init_operate_dict()
@@ -213,3 +158,5 @@ class Cube():
         print("最后还原中心")
         self.shift_center(back=True)
         return state_sol
+
+### 补充字符相关的操作和运算

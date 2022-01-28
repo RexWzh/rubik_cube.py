@@ -5,10 +5,21 @@ import time
 
 ##### 初始化 - 获取魔方位置信息 #####
 def cube_initialize(standard: bool = True):
-    """获取魔方位置信息"""
-    if standard: # 标准情形：图像置于左侧
+    """获取魔方位置信息
+    1. `standard` 设置是否使用标准位置
+       - 标准情形将魔方窗口至于左侧，自动铺满半边
+       - 不同电脑标准位置可能不同
+       - 这个参数方便在个人电脑的代码调试，初始化类时，不需要额外输入信息
+    2. 返回值数据类型为 `numpy array`，方便坐标运算
+    3. 图像初始化有两个重要信息：
+       - 魔方中心位置
+       - 魔方的尺寸
+    4. 魔方位置和尺寸通过 pyautogui.position() 获取
+    5. 图像的一点和一边确定，整个图像就确定了；但更实用的考虑，可以用 OpenCV 的 `matchTemplate` 和 `minMaxLoc` 匹配图像，而不必另外输入。
+    """
+    if standard:
         center, l1 = np.array([535, 662]), 246
-    else: # 否则要求输入两个特定位置
+    else: 
         input("按回车录入中心点位置")
         center = np.array(pg.position())
         input("按回车录入底部位置")
@@ -19,13 +30,23 @@ def cube_initialize(standard: bool = True):
     left, right, down = [np.array(p) //3 for p in [[-l2, -l3], [l2, -l3], [0, l1]]]
     return center, left, right, down
 
-# numpy 数组转化为元组
+"""
+将 <numpy 数组> 转化为 <整型元组>
+"""
 array_to_tuple = lambda arr:tuple(int(i) for i in arr)
-# 小面集转化为元组
+
+"""
+将二维列表展平，同时将数据类型从 <numpy 数组> 化为 <整型元组>
+"""
 facets_to_tuple = lambda facets:[array_to_tuple(i) for line in facets for i in line]
 
+
 def get_facets(center, left, right, down):
-    """返回左，右，上，三面的小面位置"""
+    """
+    1. 计算并返回 “左”，“右”，“上” 三面的小面中心位置，返回数据为一维列表
+    2. 三个面的位置次序分别为
+       - 顶面：最左侧起点，向 right 方向扫动
+    """
     left_origin, right_origin, up_origin = [center + i // 2 for i in [left + down, right + down, left + right]]
     lefts = [[left_origin + (2 - i) * left + j * down for i in range(3)] for j in range(3)]
     rights = [[right_origin + i * right + j * down for i in range(3)] for j in range(3)]
