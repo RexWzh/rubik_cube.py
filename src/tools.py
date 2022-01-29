@@ -72,7 +72,8 @@ def cube_initialize(standard: bool = True):
        5. 图像的一点和一边确定，整个图像就确定了；但更实用的考虑，可以用 OpenCV 的 `matchTemplate` 和 `minMaxLoc` 匹配图像，而不必另外输入。
     """
     if standard:
-        center, l1 = np.array([535, 669]), 290
+        center, l1 = np.array([535, 622]), 280
+        # 535 660 290
     else:
         input("按回车录入中心点位置")
         center = np.array(pg.position())
