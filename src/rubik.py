@@ -44,7 +44,7 @@ class Cube():
         """检验小面位置
 
         Args:
-            sides (list(int), optional): 需要检查的魔方面. 默认检查三个面.
+            sides (list(int) or int, optional): 需要检查的魔方面. 默认检查三个面.
 
         Returns:
             None: 不返回值
@@ -54,6 +54,8 @@ class Cube():
         """
         if sides is None:
             sides = [0, 1, 2]
+        elif isinstance(sides, int):
+            sides = [sides]
         if 0 in sides:
             print("正在检查顶面，注意查看鼠标位置是否准确")
             check_positions(self.ups)
