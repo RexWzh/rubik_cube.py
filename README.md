@@ -1,5 +1,6 @@
 ## 基于图像识别的魔方自动还原
 
+
 在 B 站看到一个用 Python 复原魔方的[视频](https://www.bilibili.com/video/BV12i4y1G74V)，觉得还蛮有意思，就自己动手写了个工具，附代码[地址](https://github.com/RexWzh/rubik_cube.py)。废话不多说，先看演示吧。
 
 1. 随机打乱一个魔方
@@ -10,22 +11,91 @@
    from rubik import *
    Cube().auto_solve_cube(wait=False)
    ```
-   <img src="https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed2/picgo/end.gif" width= "100%">
+   <img src="http://qiniu.wzhecnu.cn/cube/end.gif" width= "100%">
+
+---
+
+## 使用介绍
+### 安装依赖
+
+1. 安装 Python 包
+   ```bash
+   pip install pyautogui # 安装自动化工具
+   pip install kociemba # 安装魔方工具
+   ```
+
+2. Ubuntu 系统还需安装 scrot，用于截图
+   ```bash
+   sudo apt-get install scrot
+   ```
+
+3. 在 Chrome 浏览器的应用商场，搜索 `rubik` 并安装插件
+    ![深度截图_选择区域_20220128171120](https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed/picgo/深度截图_选择区域_20220128171120.png)
+
+### 基本使用
+工具包提供了这几个函数：
+1. 初始化类对象
+   ```py
+   from rubik import *
+   cube = Cude(standard=False)
+   ```
+
+2. 检查 27 个小面位置
+   ```py
+   cube.check_facets()
+   ```
+   <img src="http://qiniu.wzhecnu.cn/cube/check_facets.gif" width="90%">
+
+3. 检查魔方的基本旋转
+   ```py
+   cube.check_basic_moves() # 检查基本旋转是否正确
+   ```
+   <img src="http://qiniu.wzhecnu.cn/cube/check_moves.gif" width="90%">
+
+4. 获取魔方状态，并打印展开图
+   ```py
+   # 获取小面分布信息
+   state = cube.get_cube_distribution(string_code=True) 
+   print(expand_cube(state))
+   ```
+
+5. 自动识别并求解魔方
+   ```py
+   cube.auto_solve_cube()
+   ```
+   <img src="http://qiniu.wzhecnu.cn/cube/end.gif" width= "100%">
+
+6. 根据魔方状态码，构造给定魔方
+   ```py
+   state = "UBRLUFFUBLRUFRLLLRDBDRFDBBUDDBUDDLRFBFLDLBFFRFLRUBRDUU"
+   cube.to_cube_state(state)
+   ```
+   <img src="http://qiniu.wzhecnu.cn/cube/to_state.gif" width="90%">
+
+### 文件说明
+
+1. `src` 目录下有三个文件：
+   - `rubik.py`：主文件，定义类对象 `Cube`
+   - `data.py`：基础数据，存储魔方的色块信息等
+   - `tools.py`：函数工具
+   
+2. `demo` 目录下
+   - `demo.py` 给出演示例子
+   - `quick_start.py` 工具快捷调用
 
 ---
 
 ## 工具原理
-工具依赖两个 Python 包，以及浏览器插件：
+1. 工具依赖的 Python 包和浏览器插件：
    - pyautogui: 用于识别图像和执行操作
    - kociemba: 用于求解魔方
    - Rubik's Cube：浏览器插件
 
-### 整体思路
-
-1. 计算魔方的小面位置
-2. 识别魔方状态
-3. 根据魔方状态计算公式
-4. 将公式实现为电脑操作
+2. 整体思路
+   - 计算魔方的小面位置
+    - 识别魔方状态
+    - 根据魔方状态计算公式
+    - 将公式实现为电脑操作
 
 ### 原理细节
 1. 获取小面位置
@@ -78,73 +148,6 @@
    - 用 pyautogui 的函数 `moveTo` 和 `dragRel` 实现鼠标移动和拖拽
 
 由于函数间需频繁共享位置数据，因而使用面向对象编程，数据作为属性，函数作为方法。
-
-## 使用介绍
-### 安装依赖
-仅介绍 Ubuntu 系统的安装方法，其他系统类似
-1. 安装 Python 包
-   ```bash
-   pip install pyautogui # 安装自动化工具
-   pip install kociemba # 安装魔方工具
-   ```
-
-2. 安装 scrot，用于截图
-   ```bash
-   sudo apt-get install scrot
-   ```
-
-3. 在 Chrome 浏览器的应用商场，搜索 `rubik` 并安装插件
-    ![深度截图_选择区域_20220128171120](https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed/picgo/深度截图_选择区域_20220128171120.png)
-
-### 基本使用
-工具包提供了这几个函数：
-1. 初始化类对象
-   ```py
-   from rubik import *
-   cube = Cude(standard=False)
-   ```
-
-2. 检查 27 个小面位置
-   ```py
-   cube.check_facets()
-   ```
-   <img src="http://qiniu.wzhecnu.cn/cube/check_facets.gif" width="90%">
-
-3. 检查魔方的基本旋转
-   ```py
-   cube.check_basic_moves() # 检查基本旋转是否正确
-   ```
-   <img src="http://qiniu.wzhecnu.cn/cube/check_moves.gif" width="90%">
-
-4. 获取魔方分布信息，并打印魔方展开图
-   ```py
-   # 获取小面分布信息
-   state = cube.get_cube_distribution(string_code=True) 
-   print(expand_cube(state))
-   ```
-
-5. 自动识别并求解魔方
-   ```py
-   cube.auto_solve_cube()
-   ```
-   <img src="https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed2/picgo/end.gif" width= "100%">
-
-6. 根据魔方代码，构造给定的魔方状态
-   ```py
-   state = "UBRLUFFUBLRUFRLLLRDBDRFDBBUDDBUDDLRFBFLDLBFFRFLRUBRDUU"
-   cube.to_cube_state(state)
-   ```
-   <img src="http://qiniu.wzhecnu.cn/cube/to_state.gif" width="90%">
-
-### 文件说明
-1. `src` 目录下有三个文件：
-   - `rubik.py`：主文件，定义类对象 `Cube`
-   - `data.py`：存储魔方的色块颜色等信息
-   - `tools.py`：基本函数工具
-   
-2. `demo` 目录下
-   - `demo.py` 给出演示例子
-   - `quick_start.py` 工具快捷调用
 
 ---
 
