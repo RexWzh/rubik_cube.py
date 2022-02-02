@@ -7,7 +7,7 @@ while True:
     print("先双击屏幕，将魔方打乱再进行下一步")
     s = input("默认使用固定位置，输入 0 重新定位魔方位置：")
     standard = False if s == "0" else True
-    cube = Cube(standard=standard, interval=0.3)
+    cube = Cube(standard=standard, interval=0.13)
     cube.check_facets()
     start = input("如果检查无误，按回车开始还原，否则输入 0 取消：")
     if start != "0":
