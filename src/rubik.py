@@ -1,14 +1,17 @@
+from re import template
 import pyautogui as pg
 import kociemba as kb
 import time
-from tools import *    
+from tools import *
+from scale_match import *
+ 
 
 class Cube():
-    def __init__(self, standard: bool = True, interval:float = 0.13):
+    def __init__(self, interval:float = 0.13):
         """[summary]
 
         Args:
-            standard (bool, optional): data initialize. Defaults to True.
+            interval (float, optional): 操作的时间间隔. Defaults to 0.13.
         
         初始化内容：
            - 图像正中心位置，以及三个方向： center, left, right, down
@@ -16,7 +19,7 @@ class Cube():
            - 运算需要的数值信息（字典）： operate_dict
            - 运算的时间间隔： interval
         """
-        self.center, self.left, self.right, self.down = cube_initialize(standard)
+        self._cube_dectection()
         self._init_facet_positions()
         self._init_operate_dict()
         self.interval = interval # 操作时间间隔
@@ -82,6 +85,10 @@ class Cube():
                 time.sleep(0.5)
         return 
     
+    def show_image(self):
+        """显示检查到的图像"""
+        show_image(draw_rectangle(self.image, template.shape, self.Loc, self.ratio))
+        
     ## 函数工具 ##
     def color_distribution(self, im, shift = False, abbr = True):
         """获取截图三面的颜色分布
@@ -206,6 +213,17 @@ class Cube():
         self.shift_center(back=True)
         print("给定状态已得到")
         return state_sol
+
+    def _cube_dectection(self):
+        """检测魔方位置信息"""
+        self.template = template = cv2.imread("template.png")
+        self.image = image = PIL2cv(pg.screenshot())
+        _, Loc, ratio = scale_match(image, template, num_step=50, show=False)
+        l1 = 200 * ratio
+        l2, l3 = l1 * 208 // 246, l1 * 122 // 246
+        self.left, self.right, self.down = [np.array(p) // 3 for p in [[-l2, -l3], [l2, -l3], [0, l1]]]
+        self.center = ratio * np.array([Loc[0]+188, Loc[1] + 200])
+        self.Loc, self.ratio = Loc, ratio
 
     def _init_facet_positions(self):
         """初始化上，左，右，三面的小面位置"""

@@ -2,11 +2,18 @@ import numpy as np
 import pyautogui as pg
 import time
 from data import *
+import cv2
+from PIL import Image
 
 """
-魔方图像操作和运算的函数工具
+图像操作和运算的函数工具
 """
 
+def cv2PIL(img_cv):
+    return Image.fromarray(cv2.cvtColor(img_cv,cv2.COLOR_BGR2RGB))
+
+def PIL2cv(img_pil):
+    return cv2.cvtColor(np.asarray(img_pil),cv2.COLOR_RGB2BGR)
 
 array_to_tuple = lambda arr: tuple(int(i) for i in arr)
 array_to_tuple.__doc__ = """将 <numpy 数组> 转化为 <整型元组>
@@ -45,45 +52,6 @@ Args:
 Returns:
     int: 位置差的绝对值之和
 """
-
-
-def cube_initialize(standard: bool = True):
-    """获取魔方位置信息
-
-    Args:
-        standard (bool, optional): [description]. Defaults to True.
-
-    Returns:
-        center (numpy.ndarray): 中心点位置
-        left (numpy.ndarray): 左上方向的单位向量（长度为魔方小面的边长）
-        right (numpy.ndarray): 右上方向的单位向量
-        down (numpy.ndarray): 往下方向的的单位向量
-    
-    补充说明：
-       1. 参数 `standard` 设置是否使用标准位置
-           - 标准情形将魔方窗口至于左侧，且自动铺满半边
-           - 不同电脑标准位置可能不同
-           - 使用标准位置，方便代码调试，初始化类时，不需要额外输入信息
-       2. 返回数据类型均为 numpy，为方便坐标运算
-       3. 图像初始化有两个重要信息：
-           - 魔方中心位置
-           - 魔方的尺寸
-       4. 魔方位置和尺寸通过 pyautogui.position() 获取
-       5. 图像的一点和一边确定，整个图像就确定了；但更实用的考虑，可以用 OpenCV 的 `matchTemplate` 和 `minMaxLoc` 匹配图像，而不必另外输入。
-    """
-    if standard:
-        center, l1 = np.array(_center), _l1
-        # 535 660 290
-    else:
-        input("按回车录入中心点位置")
-        center = np.array(pg.position())
-        input("按回车录入底部位置")
-        bottom = np.array(pg.position())
-        l1 = bottom[1] - center[1]
-        print("中心位置",center, "垂直长度", l1)
-    l2, l3 = l1 * 208 // 246, l1 * 122 // 246
-    left, right, down = [np.array(p) //3 for p in [[-l2, -l3], [l2, -l3], [0, l1]]]
-    return center, left, right, down
 
 
 def check_positions(positions) -> None:
