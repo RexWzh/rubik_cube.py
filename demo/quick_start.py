@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # author: zhwang
-# date: 2022-01-30
+# date: 2022-04-19
 # description: 打开魔方插件，并双击进入待准备状态；在项目目录下，运行 `python src/quick_start.py` 进行魔方还原。
 import sys
 sys.path.append("./src/")
@@ -8,12 +8,10 @@ sys.path.append("../src/")
 from rubik import *
 
 while True:
-    print("先双击屏幕，将魔方打乱再进行下一步")
-    s = input("默认使用固定位置，输入 0 重新定位魔方位置：")
-    standard = False if s == "0" else True
-    cube = Cube(standard=standard, interval=0.13)
-    cube.check_facets()
-    start = input("如果检查无误，按回车开始还原，否则输入 0 取消：")
+    input("先双击屏幕，魔方打乱后按回车开始：")
+    cube = Cube(interval=0.13)
+    cube.check_facets(sides=[0])
+    start = input("如果无误，按回车继续，否则输入 0 重新识别：")
     if start != "0":
         while True:
             cube.auto_solve_cube(wait=False)
