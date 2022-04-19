@@ -1,6 +1,7 @@
 ## 基于图像识别的魔方自动还原
 
-在 B 站看到一个用 Python 复原魔方的[视频](https://www.bilibili.com/video/BV12i4y1G74V)，觉得还蛮有意思，就自己动手写了个工具。废话不多说，先看演示吧。
+
+在 B 站看到一个用 Python 复原魔方的[视频](https://www.bilibili.com/video/BV12i4y1G74V)，觉得还蛮有意思，就自己动手写了个工具git。废话不多说，先看演示吧。
 
 1. 随机打乱一个魔方
    <img src="https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed2/picgo/start.gif" width= "100%">
@@ -28,14 +29,14 @@
    sudo apt-get install scrot
    ```
 
-3. 在 Chrome 浏览器的应用商场，搜索 `rubik` 并安装插件
+3. 搜索安装谷歌浏览器的插件 `Rubik`
     ![深度截图_选择区域_20220128171120](https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed/picgo/深度截图_选择区域_20220128171120.png)
 
 ### 使用方法
-1. 打开谷歌浏览器的 Rubik 插件，双击进入准备状态
+1. 打开浏览器插件，双击进入准备状态
    ![20220419174040](https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed2/picgo/20220419174040.png)
 
-2. 初始化类对象，自动检测魔方位置
+2. 初始化类对象 `Cube`，检测魔方位置
    ```py
    from rubik import *
    cube = Cude()
@@ -48,13 +49,13 @@
    ![output](https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed2/picgo/output.jpg)
    
 
-4. 检查 27 个小面位置
+4. 检查小面位置
    ```py
    cube.check_facets()
    ```
    <img src="http://qiniu.wzhecnu.cn/cube/check_facets.gif" width="90%">
 
-5. 检查魔方的基本旋转
+5. 检查基本旋转
    ```py
    cube.check_basic_moves() # 检查基本旋转是否正确
    ```
@@ -67,13 +68,13 @@
    print(expand_cube(state))
    ```
 
-7. 自动识别并求解魔方
+7. 识别并求解魔方
    ```py
    cube.auto_solve_cube()
    ```
    <img src="http://qiniu.wzhecnu.cn/cube/end.gif" width= "100%">
 
-8. 根据魔方状态码，构造给定魔方
+8. 构造给定魔方状态
    ```py
    state = "UBRLUFFUBLRUFRLLLRDBDRFDBBUDDBUDDLRFBFLDLBFFRFLRUBRDUU"
    cube.to_cube_state(state)
@@ -82,7 +83,7 @@
 
 ### 文件说明
 
-1. `src` 目录下有三个文件
+1. `src` 目录下有四个文件
    | 文件名 | 说明介绍 |
    | :---: | :-----: |
    | `rubik.py` | 类对象 `Cube` |
@@ -91,25 +92,26 @@
    | `scale_match.py` | 支持比例放缩的图像检测 |
    
 2. `demo` 目录下
-   - `demo.jupyter` 演示用的文档
-   - `quick_start.py` 工具快捷调用
+   | 文件名 | 说明介绍 |
+   | :---: | :-----: |
+   | `demo.jupyter` | 演示文档
+   | `quick_start.py` | 快捷调用|
 
 ---
 
-## 代码原理
-工具方面：
-   - `pyautogui + cv2` 检测魔方位置，识别魔方状态等，以及电脑操作
-   - `kociemba`: 用于求解魔方
-   - `Rubik's Cube`：运行魔方的浏览器插件
+## 工具原理
+分两部分内容：
+   - `pyautogui + cv2` 检测魔方位置，识别魔方状态，执行电脑操作
+   - `kociemba` 调用魔方算法
 
 ### 原理细节
-1. 检测定位到魔方，并计算中心点位置 + 中心边长度
+1. 图像检测，计算最佳比例和魔方位置
+   
+
+2. 计算一点 + 一边，并推导其他位置信息
    <img src="https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed/picgo/20220128172937.png" width = "100%">
 
-2. 确定一点 + 一边后，魔方其他位置信息都能相应计算
-   <img src="https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed/picgo/20220128174645.png" width = "100%">
-
-2. 魔方状态码
+3. 魔方状态码
     - 魔方状态码是 `URFDLB` 构成的字符串，`URFDLB` 是魔方六个面的缩写，其中 U 为顶面（up），R 为右面（right），F 为正面（Front），D 为顶面（down），L 为左面（Left），B 为背面（Back）
     - 状态码按如下展开图的标号顺序读入
       ```python
@@ -137,18 +139,18 @@
       ```
    - 比如还原状态为 `UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB`
 
-3. 识别魔方状态：
+4. 识别魔方状态：
    - 将正视图的三面视为 `U, L, F`，截图识别颜色分布
       <img src="https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed2/picgo/20220129130859.png" width="100%">
    - 滑动到背面，获取后三面的颜色分布
    - 两部分信息整合，导出魔方状态码
 
-4. 魔方公式
+5. 魔方公式
    - 调用函数 `kociemba.solve` ，获取魔方公式
    - 魔方公式为 `U, U', U2, R, R', R2...` 等构成的列表
    - 其中 `U, U', U2` 分别代表顶面顺时针旋转 90°，逆时针旋转 90°，以及旋转旋转 180°，其他各面规则同理
    
-5. 将公式实现为操作
+6. 将公式实现为操作
    - 由小面位置和基本向量计算位置参数
    - 用 pyautogui 的函数 `moveTo` 和 `dragRel` 实现鼠标移动和拖拽
 
@@ -157,5 +159,5 @@
 ---
 
 ## 写在最后
-这是随手写的实战项目，还欠缺规范性；比如没有添加 CI/CD，帮助文档，文件系统也没有添加 Python 包常见的 `__init__.py` 等。这些将在后续进一步学习后，再改进和提升。
+这是寒假在家随手做的实战，代码在 Ubuntu 上测试通过，其他平台没有尝试，如果遇到问题欢迎评论交流~
 
