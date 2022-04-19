@@ -106,7 +106,7 @@
 
 ### 原理细节
 1. 图像检测，计算最佳比例和魔方位置
-   
+   ![test](https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed2/picgo/test.gif)
 
 2. 计算一点 + 一边，并推导其他位置信息
    <img src="https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed/picgo/20220128172937.png" width = "100%">
