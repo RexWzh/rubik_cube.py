@@ -1,8 +1,8 @@
-import cv2,imutils
+import cv2, imutils
 import numpy as np
 
 # 模板放缩范围
-min_scale, max_scale = (0.8, 3)
+min_scale, max_scale, num_step = (0.8, 3, 50)
 
 def show_image(img, title="image", close = True):
     cv2.imshow(title, img)
@@ -26,7 +26,7 @@ def draw_rectangle(img, shape:tuple, Loc:tuple, ratio:float):
     endX, endY = int((Loc[0] + shape[1]) * ratio), int((Loc[1] + shape[0]) * ratio)
     return cv2.rectangle(img.copy(), (startX, startY), (endX, endY), (0, 0, 255), 2)
 
-def scale_match(image, template, num_step = 20, show = True):
+def scale_match(image, template, num_step = num_step, show = True):
     """带比例的模板匹配
 
     Args:

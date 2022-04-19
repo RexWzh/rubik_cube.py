@@ -1,10 +1,13 @@
-from re import template
 import pyautogui as pg
 import kociemba as kb
-import time
-from tools import *
-from scale_match import *
- 
+import numpy as np
+import time, cv2
+from data import *
+from tools import PIL2cv, check_positions, find_color, array_to_tuple, facets_to_tuple, reverse_operations
+from scale_match import scale_match, show_image, draw_rectangle
+
+template = cv2.imread(template_path)
+assert template is not None, "未能读取模板文件，请在 src/ 目录下运行代码！"
 
 class Cube():
     def __init__(self, interval:float = 0.13):
@@ -85,7 +88,7 @@ class Cube():
                 time.sleep(0.5)
         return 
     
-    def show_image(self):
+    def show_dectition(self):
         """显示检查到的图像"""
         show_image(draw_rectangle(self.image, template.shape, self.Loc, self.ratio))
         
@@ -216,9 +219,8 @@ class Cube():
 
     def _cube_dectection(self):
         """检测魔方位置信息"""
-        self.template = template = cv2.imread("template.png")
         self.image = image = PIL2cv(pg.screenshot())
-        _, Loc, ratio = scale_match(image, template, num_step=50, show=False)
+        _, Loc, ratio = scale_match(image, template, show=False)
         l1 = 200 * ratio
         l2, l3 = l1 * 208 // 246, l1 * 122 // 246
         self.left, self.right, self.down = [np.array(p) // 3 for p in [[-l2, -l3], [l2, -l3], [0, l1]]]

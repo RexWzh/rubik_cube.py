@@ -1,9 +1,8 @@
 import numpy as np
 import pyautogui as pg
-import time
-from data import *
-import cv2
+import time, cv2
 from PIL import Image
+from data import *
 
 """
 图像操作和运算的函数工具
