@@ -10,6 +10,22 @@ def show_image(img, title="image", close = True):
     if close:
         cv2.destroyWindow(title)
 
+def draw_rectangle(img, shape:tuple, Loc:tuple, ratio:float):
+    """图上绘制识别的红框
+
+    Args:
+        img (numpy.ndarray): 目标图
+        shape (tuple): 模板尺寸
+        Loc (tuple): 矩形左上位置
+        ratio (float): 放缩比例
+
+    Returns:
+        numpy.ndarray: 绘制了红框的图片（新建图片）
+    """
+    startX, startY = int(Loc[0] * ratio), int(Loc[1] * ratio)
+    endX, endY = int((Loc[0] + shape[1]) * ratio), int((Loc[1] + shape[0]) * ratio)
+    return cv2.rectangle(img.copy(), (startX, startY), (endX, endY), (0, 0, 255), 2)
+
 def scale_match(image, template, num_step = 20, show = True):
     """带比例的模板匹配
 
@@ -21,13 +37,6 @@ def scale_match(image, template, num_step = 20, show = True):
     Returns:
         tuple: 最佳匹配值，最佳匹配位置，放缩比例
     """
-    def _show_rectangle(maxLoc, r):
-        clone = image.copy()
-        startX, startY = int(maxLoc[0] * r), int(maxLoc[1] * r)
-        endX, endY = int((maxLoc[0] + tW) * r), int((maxLoc[1] + tH) * r)
-        cv2.rectangle(clone, (startX, startY), (endX, endY), (0, 0, 255), 2)
-        show_image(clone, close=False)
-    
     # 模板尺寸
     (tH, tW) = template.shape[:2]
     
@@ -56,12 +65,12 @@ def scale_match(image, template, num_step = 20, show = True):
         (_, maxVal, _, maxLoc) = cv2.minMaxLoc(result)
         #  print("比例 %.3f\t最佳匹配值%.3f" % (scale, maxVal/ 10**7))
         if show:
-            _show_rectangle(maxLoc, 1/scale)
+            show_image(draw_rectangle(image, (tH, tW), maxLoc, 1/scale), close=False)
             
         # 更新最优位置
         if best_match is None or maxVal > best_match[0]:
             best_match = (maxVal, maxLoc, 1/scale)
     if show:
-        _show_rectangle(best_match[1], 1/best_match[2])
+        show_image(draw_rectangle(image, (tH, tW), best_match[1], best_match[2]), close=False)
         cv2.destroyAllWindows()
     return best_match
