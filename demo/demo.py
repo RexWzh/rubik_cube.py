@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # author: zhwang
 # date: 2022-01-30
-# description: 打开魔方插件，并双击进入待准备状态；在项目目录下，运行 `python src/demo.py` 进行魔方还原。
+# description: 三个示例演示
 
 import sys
 sys.path.append("./src/")

@@ -1,3 +1,6 @@
+# 默认参数
+_center, _l1 = [535, 622], 280
+
 # 颜色和小面位置相互转化（字典）
 color_to_facet = {"white":"U", "red":"L", "blue":"F", "green":"B", "orange":"R", "yellow":"D"}
 

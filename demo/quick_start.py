@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+# author: zhwang
+# date: 2022-01-30
+# description: 打开魔方插件，并双击进入待准备状态；在项目目录下，运行 `python src/quick_start.py` 进行魔方还原。
 import sys
 sys.path.append("./src/")
 sys.path.append("../src/")
