@@ -2,17 +2,33 @@ import numpy as np
 import pyautogui as pg
 import time, cv2
 from PIL import Image
-from data import *
+from data import colors,init_txt
 
 """
 图像操作和运算的函数工具
 """
 
 def cv2PIL(img_cv):
-    return Image.fromarray(cv2.cvtColor(img_cv,cv2.COLOR_BGR2RGB))
+    """opencv 图像转 PIL 图像
+
+    Args:
+        img_cv (numpy.ndarray): 输入图像
+
+    Returns:
+        PILImage: 输出图像
+    """
+    return Image.fromarray(cv2.cvtColor(img_cv, cv2.COLOR_BGR2RGB))
 
 def PIL2cv(img_pil):
-    return cv2.cvtColor(np.asarray(img_pil),cv2.COLOR_RGB2BGR)
+    """PIL 图像转 opencv 图像
+
+    Args:
+        img_pil (PILImage): 输入图像
+
+    Returns:
+        numpy.ndarray: 输出图像
+    """
+    return cv2.cvtColor(np.asarray(img_pil), cv2.COLOR_RGB2BGR)
 
 array_to_tuple = lambda arr: tuple(int(i) for i in arr)
 array_to_tuple.__doc__ = """将 <numpy 数组> 转化为 <整型元组>

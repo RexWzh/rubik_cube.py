@@ -2,7 +2,7 @@ import pyautogui as pg
 import kociemba as kb
 import numpy as np
 import time, cv2
-from data import *
+from data import template_path, color_to_facet
 from tools import PIL2cv, check_positions, find_color, array_to_tuple, facets_to_tuple, reverse_operations
 from scale_match import scale_match, show_image, draw_rectangle
 
@@ -10,7 +10,7 @@ template = cv2.imread(template_path)
 assert template is not None, "未能读取模板文件，请在 src/ 目录下运行代码！"
 
 class Cube():
-    def __init__(self, interval:float = 0.13):
+    def __init__(self, interval:float = 0.2):
         """[summary]
 
         Args:
