@@ -11,7 +11,7 @@ assert template is not None, "未能读取模板文件，请在 src/ 目录下�
 
 class Cube():
     def __init__(self, interval:float = 0.2):
-        """[summary]
+        """初始化
 
         Args:
             interval (float, optional): 操作的时间间隔. Defaults to 0.13.

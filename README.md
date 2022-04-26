@@ -1,6 +1,5 @@
 ## 基于图像识别的魔方自动还原
 
-
 在 B 站看到一个用 Python 复原魔方的[视频](https://www.bilibili.com/video/BV12i4y1G74V)，觉得还蛮有意思，就自己动手写了个工具git。废话不多说，先看演示吧。
 
 1. 随机打乱一个魔方
@@ -33,6 +32,8 @@
     ![深度截图_选择区域_20220128171120](https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed/picgo/深度截图_选择区域_20220128171120.png)
 
 ### 使用方法
+注：`demo/` 目录下提供了用于演示的 Jupyter 文件。
+
 1. 打开浏览器插件，双击进入准备状态
    ![20220419174040](https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed2/picgo/20220419174040.png)
 
@@ -94,7 +95,7 @@
 2. `demo` 目录下
    | 文件名 | 说明介绍 |
    | :---: | :-----: |
-   | `demo.jupyter` | 演示文档
+   | `demo.jupyter` | 演示文档 |
    | `quick_start.py` | 快捷调用|
 
 ---
@@ -159,5 +160,5 @@
 ---
 
 ## 写在最后
-这是寒假在家随手做的实战，代码在 Ubuntu 上测试通过，其他平台没有尝试，如果遇到问题欢迎评论交流~
+这是放假在家随手写的实战，代码在 Ubuntu 和 Windows 测试通过，如果遇到问题欢迎评论交流~
 
