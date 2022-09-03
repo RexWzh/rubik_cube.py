@@ -27,7 +27,7 @@ permdict = {
 }
 
 class GroupElement(object):
-    def __init__(self, perm:list) -> None:
+    def __init__(self, perm):
         self._unit = None
         if isinstance(perm, list):
             assert len(perm) == 48, "The length of the permutation must be 48."
@@ -35,33 +35,61 @@ class GroupElement(object):
             ele = self.str2perm(perm)
             perm = ele.perm
         else:
-            raise Exception("输入有误")
+            raise Exception("Invalid type of the permutation.")
         self.perm = perm
         self.init_state = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
     
     def state(self):
+        """image of the action of the permutation on the initial state
+
+        Returns:
+            str: image of the action.
+        """
         return self(self.init_state)
     
     def __mul__(self, ele):
+        """Compose two permutations.
+
+        Args:
+            ele (GroupElement): another permutation.
+
+        Returns:
+            GroupElement: the composition of two permutations.
         """
-        The multiplication of two permutations.
-        """
-        # 位置 i 先被 perm2 作用，再被 perm1 作用
+        # act first by perm2 then by perm1
         perm1, perm2 = self.perm, ele.perm
         return GroupElement([perm1[perm2[i]] for i in range(48)])
     
     def __truediv__(self, ele):
+        """The quotient of two permutations.
+
+        Args:
+            ele (GroupElement): another permutation.
+
+        Returns:
+            GroupElement: the quotient of two permutations.
+        """
         return self * ele.inv()
     
     def inv(self):
+        """Inverse of the permutation.
+
+        Returns:
+            GroupElement: inverse of the permutation.
+        """
         pre = [None] * 48
         for i, j in enumerate(self.perm):
             pre[j] = i
         return GroupElement(pre)
         
     def __call__(self, state):
-        """
-        Apply the permutation to a state.
+        """Image of the action of the permutation on the state.
+
+        Args:
+            state (str): the state.
+
+        Returns:
+            str: image of the action.
         """
         if isinstance(state, str):
             state = list(state)
@@ -76,10 +104,21 @@ class GroupElement(object):
     
     @staticmethod
     def _char2perm(c:str):
-        assert len(c) == 1, "字符长度必须为 1"
+        assert len(c) == 1, "The length of the character must be 1."
         return GroupElement(permdict[c])
     
     def str2perm(self, st:str):
+        """Convert a string to a permutation.
+
+        Args:
+            st (str): the string.
+
+        Raises:
+            Exception: invalid string.
+
+        Returns:
+            GroupElement: the permutation.
+        """
         eles = []
         for c in st:
             if c in "UFDLBR":
@@ -93,6 +132,14 @@ class GroupElement(object):
         return self.prod(eles)
     
     def prod(self, eles):
+        """Product of a list of permutations.
+
+        Args:
+            eles (list): list of permutations.
+
+        Returns:
+            GroupElement: the product of the list of permutations.
+        """
         if len(eles) == 0:
             return self.unit
         ele = eles[0]
@@ -107,24 +154,55 @@ class GroupElement(object):
         return self.perm.__str__()
     
     def __xor__(self, n:int):
+        """n-th power of the permutation.
+
+        Args:
+            n (int): the power.
+
+        Returns:
+            GroupElement: n-th power of the permutation.
+        """
         if n == 0:return self.unit
         ele = self if n > 0 else self.inv()
         return self.prod([ele] * abs(n))
     
     @property
     def unit(self):
+        """The identity element.
+
+        Returns:
+            GroupElement: the identity element.
+        """
         if self._unit is None:
             self._unit = GroupElement(list(range(48)))
         return self._unit
     
     def isunit(self):
+        """Check if the permutation is the identity element.
+
+        Returns:
+            bool: True if the permutation is the identity element.
+        """
         return self == self.unit
     
     def __eq__(self, ele):
+        """Check if two permutations are equal.
+
+        Args:
+            ele (GroupElement): another permutation.
+
+        Returns:
+            bool: True if two permutations are equal.
+        """
         return self.perm == ele.perm
     
     def order(self):
-        assert len(set(self.perm)) == 48, "无效元素"
+        """Order of the permutation.
+
+        Returns:
+            int: order of the permutation.
+        """
+        assert len(set(self.perm)) == 48, "The permutation is not a group element."
         n = 1
         ele = self
         while ele != self.unit:
