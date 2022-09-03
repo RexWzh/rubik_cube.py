@@ -15,8 +15,8 @@ while True:
     if start != "0":
         while True:
             cube.auto_solve_cube(wait=False)
-            end = input("执行结束，按回车处理下一个，输入 0 结束：")
-            if end == "0":
+            isend = input("执行结束，按回车处理下一个，输入其他结束：")
+            if len(isend):
                 break
     else:
         continue

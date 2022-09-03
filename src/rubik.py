@@ -8,6 +8,10 @@ from scale_match import scale_match, show_image, draw_rectangle
 from group import GroupElement
 
 template = cv2.imread(template_path)
+if template is None:
+    template = cv2.imread("../src/" + template_path)
+if template is None:
+    template = cv2.imread("./src/" + template_path)
 assert template is not None, "未能读取模板文件，请在 src/ 目录下运行代码！"
 
 class Cube():
