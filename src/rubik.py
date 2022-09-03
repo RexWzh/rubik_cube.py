@@ -3,8 +3,9 @@ import kociemba as kb
 import numpy as np
 import time, cv2
 from data import *
-from tools import PIL2cv, check_positions, find_color, array_to_tuple, facets_to_tuple, reverse_operations
+from tools import PIL2cv, check_positions, find_color, array_to_tuple, facets_to_tuple
 from scale_match import scale_match, show_image, draw_rectangle
+from group import GroupElement
 
 template = cv2.imread(template_path)
 assert template is not None, "未能读取模板文件，请在 src/ 目录下运行代码！"
@@ -191,31 +192,27 @@ class Cube():
         Returns:
            list(str): 返回给定魔方状态的解法
         
-        函数主要操作：
-           1. 用换心公式作用在打乱的魔方上
-           2. 忽略中心块，将魔方“还原”
-           3. 求输入状态的还原方法，并用逆操作施加在“还原”的魔方上
-           4. 用逆换心公式作用在得到的魔方上
-        
-        原理说明：
-           - 利用了换心公式与魔方的基本操作交换性
         """
-        current = self.get_cube_distribution(string_code = True)
-        current_sol = kb.solve(current).split()
-        state_sol = kb.solve(state).split()
-        reverse_sol = reverse_operations(state_sol)
-        print("正在移位中心")
-        self.shift_center()
-        print("正在将魔方“还原”")
-        for op in current_sol:
+        # 当前状态
+        curstate = self.get_cube_distribution(string_code = True)
+        # 当前状态解法(作用从左到右，需反转)
+        cursol = kb.solve(curstate).split()[::-1]
+        # 转化为群元素 action
+        curact = GroupElement(''.join(cursol))
+        # 目标状态解法
+        targetsol = kb.solve(state).split()[::-1]
+        targetact = GroupElement(''.join(targetsol))
+        assert (targetact.inv() * curact)(curstate) == state
+        # 中间状态
+        mixstate = (curact.inv() * targetact).state()
+        # 中间状态解
+        mixsol = kb.solve(mixstate).split()
+        mixact = GroupElement(''.join(mixsol[::-1]))
+        assert mixact(curstate) == state
+        print("将魔方化为给定状态，步数", len(mixsol))
+        for op in mixsol:
             self.cube_operate(op)
-        print("将魔方化为给定状态")
-        for op in reverse_sol:
-            self.cube_operate(op)
-        print("最后还原中心")
-        self.shift_center(back=True)
-        print("给定状态已得到")
-        return state_sol
+        return mixsol
 
     def _cube_dectection(self):
         """检测魔方位置信息"""

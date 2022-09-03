@@ -93,37 +93,6 @@ def find_color(img, pos, side = 0) -> str:
     color = img.getpixel(pos)
     return min(colors.keys(), key = lambda c: diff(colors[c][side], color))
 
-
-def reverse_operation(op: str) -> str:
-    """将魔方操作转为逆操作
-    
-    Args:
-        op (str): 魔方操作的字符
-
-    Returns:
-        str: 逆操作的字符
-    """
-    if len(op) == 1:
-        return op + "'"
-    if op[-1] == "'":
-        return op[0]
-    return op
-
-
-reverse_operations = lambda solution:[reverse_operation(op) for op in solution[::-1]]
-reverse_operations.__doc__ = """将魔方系列操作转为逆操作
-
-Args:
-    solution (list(str)): 魔方操作列表
-
-Returns:
-    list(str)： 给定操作的逆操作列表
-
-说明：
-   - 用于生成给定的魔方
-   - 还原状态 + 逆操作 = 给定状态
-"""
-
 def expand_cube(state: str = "") -> str:
     """返回魔方状态的展开图
 
