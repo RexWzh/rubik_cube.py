@@ -78,15 +78,15 @@ class Cube():
             check_positions(self.rights)
         return 
     
-    def check_basic_moves(self, faces = None) -> None:
+    def check_basic_moves(self, facets:str = None) -> None:
         """检验基础旋转操作是否正确
         
         Args:
             faces (str, optional): 需要检查的魔方面. 默认检查所有面.
         """
-        if faces is None:
-            faces = "UDLRFB"
-        for op in faces:
+        if facets is None:
+            facets = "UDLRFB"
+        for op in facets:
             print("当前正在旋转的面为", op)
             for i in ["", "'", "2"]:
                 self.cube_operate(op + i)
@@ -187,7 +187,7 @@ class Cube():
             pg.dragRel(p[0], p[1], duration = 0.25)
         return
     
-    def to_cube_state(self, state: str) -> list:
+    def to_cube_state(self, state: str = None) -> list:
         """将打乱的魔方化为给定魔方状态，并求解
         
         Args:
@@ -197,25 +197,25 @@ class Cube():
            list(str): 返回给定魔方状态的解法
         
         """
+        if state is None:
+            state = "DUDUUUDUDBRBRRRBRBLFLFFFLFLUDUDDDUDUFLFLLLFLFRBRBBBRBR"
         # 当前状态
         curstate = self.get_cube_distribution(string_code = True)
-        # 当前状态解法(作用从左到右，需反转)
-        cursol = kb.solve(curstate).split()[::-1]
-        # 转化为群元素 action
-        curact = GroupElement(''.join(cursol))
-        # 目标状态解法
+        cursol = kb.solve(curstate).split()[::-1] # 当前解法(作用从左到右，需反转)
+        curact = GroupElement(''.join(cursol)) # 转化为群元素 action
+        # 目标状态
         targetsol = kb.solve(state).split()[::-1]
         targetact = GroupElement(''.join(targetsol))
         assert (targetact.inv() * curact)(curstate) == state
-        # 中间状态
+        # 过渡状态
         mixstate = (curact.inv() * targetact).state()
-        # 中间状态解
-        mixsol = kb.solve(mixstate).split()
+        mixsol = kb.solve(mixstate).split() # 获取解法
         mixact = GroupElement(''.join(mixsol[::-1]))
         assert mixact(curstate) == state
         print("将魔方化为给定状态，步数", len(mixsol))
         for op in mixsol:
             self.cube_operate(op)
+        self.get_cube_distribution()
         return mixsol
 
     def _cube_dectection(self):
