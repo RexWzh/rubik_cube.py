@@ -4,7 +4,7 @@ class GroupElement(object):
         self._unit = None
         if isinstance(perm, list):
             assert len(perm) == 48, "The length of the permutation must be 48."
-        elif isinstance(perm, str):
+        elif isinstance(perm, str): 
             ele = self.str2perm(perm)
             perm = ele.perm
         else:
