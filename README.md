@@ -1,6 +1,8 @@
-## 基于图像识别的魔方自动还原
+# 魔方自动还原
 
-在 B 站看到一个用 Python 复原魔方的[视频](https://www.bilibili.com/video/BV12i4y1G74V)，觉得还蛮有意思，就自己动手写了个工具git。废话不多说，先看演示吧。
+> 工具原理及使用演示： [Bilibili - Rex_Wzh](https://www.bilibili.com/video/BV1yU4y1B71P)
+
+在 B 站看到一个用 Python 复原魔方的[视频](https://www.bilibili.com/video/BV12i4y1G74V)，觉得还蛮有意思，就自己动手写了个工具。废话不多说，先看演示吧。
 
 1. 随机打乱一个魔方
    <img src="https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed2/picgo/start.gif" width= "100%">

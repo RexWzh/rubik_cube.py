@@ -9,13 +9,8 @@ from data import colors,init_txt
 """
 
 def cv2PIL(img_cv):
-    """opencv 图像转 PIL 图像
-
-    Args:
-        img_cv (numpy.ndarray): 输入图像
-
-    Returns:
-        PILImage: 输出图像
+    """
+    
     """
     return Image.fromarray(cv2.cvtColor(img_cv, cv2.COLOR_BGR2RGB))
 
