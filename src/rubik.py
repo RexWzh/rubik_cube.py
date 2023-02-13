@@ -125,7 +125,7 @@ class Cube():
                 time.sleep(0.5)
         return 
     
-    def show_dectition(self, openwindow = True):
+    def show_detection(self, openwindow = True):
         """显示检查到的图像"""
         if openwindow:
             show_image(draw_rectangle(self.image, template.shape, self.Loc, self.ratio))
