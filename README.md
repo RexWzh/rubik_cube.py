@@ -21,20 +21,24 @@
 
 1. 安装 Python 包
    ```bash
-   pip install pyautogui # 安装自动化工具
-   pip install kociemba # 安装魔方工具
+   pip install pyautogui # 自动化工具
+   pip install kociemba # 魔方算法工具
+   pip install opencv-python # 图像处理工具
+   pip install imutils # 图像放缩
    ```
 
-2. Ubuntu 系统还需安装 scrot，用于截图
+2. 搜索安装谷歌浏览器的插件 `Rubik`
+    ![深度截图_选择区域_20220128171120](https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed/picgo/深度截图_选择区域_20220128171120.png)
+
+3. Ubuntu 系统还需要安装 scrot 用于截图
    ```bash
    sudo apt-get install scrot
    ```
 
-3. 搜索安装谷歌浏览器的插件 `Rubik`
-    ![深度截图_选择区域_20220128171120](https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed/picgo/深度截图_选择区域_20220128171120.png)
-
+4. Mac 系统需开启屏幕截图权限，否则只会截取桌面，参见 [StackOverflow](https://stackoverflow.com/questions/63947364/pyautogui-screenshots-my-only-background-mac-os)。
 ### 使用方法
-注：`demo/` 目录下提供了用于演示的 Jupyter 文件。
+
+> 特别说明：`<仓库>/demo` 目录下有两个 Jupyter 文件，其中 `demo-jupyter.ipynb` 用于演示和错误调试，`比利比利.ipynb` 为[ B 站视频](https://www.bilibili.com/video/BV1yU4y1B71P) 使用的代码。
 
 1. 打开浏览器插件，双击进入准备状态
    ![20220419174040](https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed2/picgo/20220419174040.png)
