@@ -3,7 +3,7 @@ import kociemba as kb
 import numpy as np
 import time, cv2
 from data import template_path, color_to_facet
-from tools import PIL2cv, check_positions, find_color, array_to_tuple, facets_to_tuple, cv2PIL
+from tools import PIL2cv, check_positions, find_color, array_to_tuple, facets_to_tuple, cv2PIL, expand_cube
 from scale_match import scale_match, show_image, draw_rectangle
 from group import GroupElement
 
@@ -41,7 +41,7 @@ class Cube():
         """
         cube_code = self.get_cube_distribution(string_code = True)
         print("魔方识别完毕")
-        solution = kb.solve(cube_code).split()
+        solution = self.solvebykociemba(cube_code)
         print("还原需要 %d 步"%len(solution))
         time.sleep(.4)
         if wait:
@@ -50,7 +50,30 @@ class Cube():
             self.cube_operate(op)
         print("魔方已还原，请检查")
         return solution
+    
+    @staticmethod
+    def solvebykociemba(cube_code:str) -> list:
+        """使用 kociemba 库求解魔方
         
+        Args:
+            cube_code (str): 魔方状态
+        
+        Returns:
+            list: 魔方还原步骤
+        """
+        ## 检查魔方中心
+        cens = cube_code[4::9]
+        if len(set(cens)) == 6 and len(set(cens)) != "URFDLB":
+            ## TODO: 通过群元素计算，将中心非对齐形式转化为对齐形式
+            raise ValueError("魔方中心颜色错误，需将魔方中心对齐为初始形式(TODO)\n上左右：白红蓝")
+        try:
+            sol = kb.solve(cube_code)
+        except:
+            print("魔方状态码无效，可能存在颜色错误，请校对魔方展开图")
+            print(expand_cube(cube_code))
+            raise ValueError("魔方状态错误，无法还原")
+        return sol.split()
+
     ## 检查数据 ##
     def check_facets(self, sides = None) -> None:
         """检验小面位置
@@ -80,10 +103,10 @@ class Cube():
         return 
     
     ## 检查中心
-    def check_center(self) -> None:
+    def check_center(self, click=False) -> None:
         """检查中心位置"""
         print("检查鼠标是否移动到中心位置")
-        self._move2center()
+        self._move2center(click=click)
         return
 
     def check_basic_moves(self, facets:str = None) -> None:
