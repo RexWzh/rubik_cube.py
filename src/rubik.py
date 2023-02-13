@@ -152,7 +152,7 @@ class Cube():
         seq = [(-d, 0), (-d, 0), (0, -d)] if not back else [(0, d), (d, 0), (d, 0)]
         for i, j in seq:
             pg.moveTo(corner, duration=0.1)
-            pg.dragRel(i, j, duration=0.25)
+            pg.dragRel(i, j, duration=0.25, button="left")
         return
     
     def cube_operate(self, op):
@@ -166,13 +166,13 @@ class Cube():
         pos, rel = operate_dict[op[0]] # 位置以及相对位移
         pg.moveTo(pos)
         if op[-1] == "2":
-            pg.dragRel(rel[0], rel[1], duration=interval)
+            pg.dragRel(rel[0], rel[1], duration=interval, button="left")
             pg.moveTo(pos)
-            pg.dragRel(rel[0], rel[1], duration=interval)
+            pg.dragRel(rel[0], rel[1], duration=interval, button="left")
         elif op[-1] == "'":
-            pg.dragRel(-rel[0], -rel[1], duration=interval)
+            pg.dragRel(-rel[0], -rel[1], duration=interval, button="left")
         else:
-            pg.dragRel(rel[0], rel[1], duration=interval)
+            pg.dragRel(rel[0], rel[1], duration=interval, button="left")
         return 
     
     def shift_center(self, back=False):
@@ -189,7 +189,7 @@ class Cube():
             seq = [array_to_tuple(i) for i in [right, left, -right, -left]]
         for p in seq:
             pg.moveTo(center)
-            pg.dragRel(p[0], p[1], duration = 0.25)
+            pg.dragRel(p[0], p[1], duration = 0.25, button="left")
         return
     
     def to_cube_state(self, state: str = None) -> list:
