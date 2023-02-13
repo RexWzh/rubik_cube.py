@@ -79,6 +79,13 @@ class Cube():
             check_positions(self.rights)
         return 
     
+    ## 检查中心
+    def check_center(self) -> None:
+        """检查中心位置"""
+        print("检查鼠标是否移动到中心位置")
+        self._move2center()
+        return
+
     def check_basic_moves(self, facets:str = None) -> None:
         """检验基础旋转操作是否正确
         
@@ -87,6 +94,7 @@ class Cube():
         """
         if facets is None:
             facets = "UDLRFB"
+        self._move2center()
         for op in facets:
             print("当前正在旋转的面为", op)
             for i in ["", "'", "2"]:
@@ -130,6 +138,7 @@ class Cube():
         Returns:
             list/string: 返回字符列表，或者字符串
         """
+        self._move2center()
         img = pg.screenshot() # 截图
         U, L, F = self.color_distribution(img) # 获取初始三面
         self.shift_faces() # 切换背面
@@ -181,6 +190,7 @@ class Cube():
         Args:
            back (bool, optional): 是否使用逆公式，默认否
         """
+        self._move2center()
         center = self.ups[4]
         left, right = self.left, self.right
         if not back:
@@ -223,6 +233,13 @@ class Cube():
         self.get_cube_distribution()
         return mixsol
 
+    def _move2center(self, click=True):
+        """将魔方移动魔方中心"""
+        pg.moveTo(tuple(self.center))
+        if click:
+            pg.click()
+        return
+    
     def _cube_dectection(self):
         """检测魔方位置信息"""
         self.image = image = PIL2cv(pg.screenshot())
