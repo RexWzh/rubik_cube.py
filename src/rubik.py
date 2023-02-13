@@ -3,7 +3,7 @@ import kociemba as kb
 import numpy as np
 import time, cv2
 from data import template_path, color_to_facet
-from tools import PIL2cv, check_positions, find_color, array_to_tuple, facets_to_tuple
+from tools import PIL2cv, check_positions, find_color, array_to_tuple, facets_to_tuple, cv2PIL
 from scale_match import scale_match, show_image, draw_rectangle
 from group import GroupElement
 
@@ -13,6 +13,7 @@ if template is None:
 if template is None:
     template = cv2.imread("./src/" + template_path)
 assert template is not None, "未能读取模板文件，请在 src/ 目录下运行代码！"
+
 
 class Cube():
     def __init__(self, interval:float = 0.2):
@@ -93,9 +94,13 @@ class Cube():
                 time.sleep(0.5)
         return 
     
-    def show_dectition(self):
+    def show_dectition(self, openwindow = True):
         """显示检查到的图像"""
-        show_image(draw_rectangle(self.image, template.shape, self.Loc, self.ratio))
+        if openwindow:
+            show_image(draw_rectangle(self.image, template.shape, self.Loc, self.ratio))
+        else:
+            return cv2PIL(draw_rectangle(self.image, template.shape, self.Loc, self.ratio))
+        return
         
     ## 函数工具 ##
     def color_distribution(self, im, shift = False, abbr = True):
@@ -222,10 +227,12 @@ class Cube():
         """检测魔方位置信息"""
         self.image = image = PIL2cv(pg.screenshot())
         _, Loc, ratio = scale_match(image, template, show=False)
-        l1 = 200 * ratio
+        pgsize = pg.size()
+        imgscale = pgsize[0] / image.shape[1] * ratio
+        l1 = 200 * imgscale
         l2, l3 = l1 * 208 // 246, l1 * 122 // 246
         self.left, self.right, self.down = [np.array(p) // 3 for p in [[-l2, -l3], [l2, -l3], [0, l1]]]
-        self.center = ratio * np.array([Loc[0]+188, Loc[1] + 200])
+        self.center = imgscale * np.array([Loc[0]+188, Loc[1] + 200])
         self.Loc, self.ratio = Loc, ratio
 
     def _init_facet_positions(self):
