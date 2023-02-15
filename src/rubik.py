@@ -179,13 +179,21 @@ class Cube():
         Args:
            back (bool, optional): 是否从背面返回正面，默认从正面到背面
         """
-        d = int(self.down[1])
-        corner = array_to_tuple(self.center + (3 * d, 3 * d))
-        seq = [(-d, 0), (-d, 0), (0, -d)] if not back else [(0, d), (d, 0), (d, 0)]
-        for i, j in seq:
-            pg.moveTo(corner, duration=0.1)
-            pg.dragRel(i, j, duration=0.25, button="left")
+        seq = "LLU" if not back else "DRR"
+        for op in seq:
+            self._shift_direction(op)
         return
+    
+    def _shift_direction(self, direct:str)-> None:
+        """左滑/右滑/上移/下移
+
+        Args:
+            direct (str): 滑动方向，L/R/U/D
+        """
+        corner, str2loc = self.corner, self.str2loc
+        pg.moveTo(corner, duration=0.1)
+        pg.dragRel(*str2loc[direct], duration=0.25, button="left")
+        return 
     
     def cube_operate(self, op):
         """将魔方字符转为具体操作
@@ -267,12 +275,19 @@ class Cube():
         """检测魔方位置信息"""
         self.image = image = PIL2cv(pg.screenshot())
         _, Loc, ratio = detect_image(image, template)
-        pgsize = pg.size()
-        imgscale = pgsize[0] / image.shape[1] * ratio
+        pgsize = pg.size() # pyautogui 的屏幕尺寸，矫正截图尺寸
+        imgscale = pgsize[0] / image.shape[1] * ratio # 图片缩放比例
         l1 = 200 * imgscale
         l2, l3 = l1 * 208 // 246, l1 * 122 // 246
+        # 魔方三个中心小面的中心点
         self.left, self.right, self.down = [np.array(p) // 3 for p in [[-l2, -l3], [l2, -l3], [0, l1]]]
+        # 魔方中心点
         self.center = imgscale * np.array([Loc[0]+188, Loc[1] + 200])
+        # 魔方右下的角落
+        unit = int(self.down[1])
+        self.corner = array_to_tuple(self.center + (3 * unit, 3 * unit))
+        self.str2loc = {"L": (-unit, 0), "R": (unit, 0), "U": (0, -unit), "D": (0, unit)}
+        # 最佳定位位置和比例
         self.Loc, self.ratio = Loc, ratio
 
     def _init_facet_positions(self):
