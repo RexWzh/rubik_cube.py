@@ -1,6 +1,6 @@
 # 魔方自动还原
 
-> 工具原理及使用演示： [Bilibili - Rex_Wzh](https://www.bilibili.com/video/BV1yU4y1B71P)
+**工具原理及使用演示**： [一行代码“玩转”魔方 | Python](https://www.bilibili.com/video/BV1yU4y1B71P)
 
 在 B 站看到一个用 Python 复原魔方的[视频](https://www.bilibili.com/video/BV12i4y1G74V)，觉得还蛮有意思，就自己动手写了个工具。废话不多说，先看演示吧。
 
@@ -36,6 +36,7 @@
    ```
 
 4. Mac 系统需开启屏幕截图权限，否则只会截取桌面，参见 [StackOverflow](https://stackoverflow.com/questions/63947364/pyautogui-screenshots-my-only-background-mac-os)。
+
 ### 使用方法
 
 > 特别说明：`<仓库>/demo` 目录下有两个 Jupyter 文件，其中 `demo-jupyter.ipynb` 用于演示和错误调试，`比利比利.ipynb` 为[ B 站视频](https://www.bilibili.com/video/BV1yU4y1B71P) 使用的代码。

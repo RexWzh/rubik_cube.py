@@ -4,7 +4,7 @@ import numpy as np
 import time, cv2
 from data import template_path, color_to_facet
 from tools import PIL2cv, check_positions, find_color, array_to_tuple, facets_to_tuple, cv2PIL, expand_cube
-from scale_match import scale_match, show_image, draw_rectangle
+from scale_match import detect_image, show_image, draw_rectangle
 from group import GroupElement
 
 template = cv2.imread(template_path)
@@ -125,7 +125,7 @@ class Cube():
                 time.sleep(0.5)
         return 
     
-    def show_dectition(self, openwindow = True):
+    def show_detection(self, openwindow = True):
         """显示检查到的图像"""
         if openwindow:
             show_image(draw_rectangle(self.image, template.shape, self.Loc, self.ratio))
@@ -266,7 +266,7 @@ class Cube():
     def _cube_dectection(self):
         """检测魔方位置信息"""
         self.image = image = PIL2cv(pg.screenshot())
-        _, Loc, ratio = scale_match(image, template, show=False)
+        _, Loc, ratio = detect_image(image, template)
         pgsize = pg.size()
         imgscale = pgsize[0] / image.shape[1] * ratio
         l1 = 200 * imgscale

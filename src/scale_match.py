@@ -26,31 +26,31 @@ def draw_rectangle(img, shape:tuple, Loc:tuple, ratio:float):
     endX, endY = int((Loc[0] + shape[1]) * ratio), int((Loc[1] + shape[0]) * ratio)
     return cv2.rectangle(img.copy(), (startX, startY), (endX, endY), (0, 0, 255), 2)
 
-def scale_match(image, template, num_step = num_step, show = True):
+def detect_image(image, template, num_step = num_step, frames = False):
     """带比例的模板匹配
 
     Args:
         image (numpy.ndarray): 目标图片
         template (numpy.ndarray): 模板图片
         show (bool, optional): 是否显示图片和匹配过程. Defaults to True.
+        frames (bool, optional): 是否返回匹配过程的图片. Defaults to False.
 
     Returns:
         tuple: 最佳匹配值，最佳匹配位置，放缩比例
     """
+    # 收集匹配过程的图片
+    images = [(0., image)]
+
     # 模板尺寸
     (tH, tW) = template.shape[:2]
     
     # 模板图边缘检测
     template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
     template = cv2.Canny(template, 50, 200)
-    # 显示图片
-    if show:show_image(template, "Template")
-    
+
     # 目标图的边缘检测
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     edged = cv2.Canny(gray, 50, 200)
-    # 显示图片
-    if show:show_image(image)
     
     # 搜索最佳匹配
     best_match = None
@@ -64,13 +64,12 @@ def scale_match(image, template, num_step = num_step, show = True):
         result = cv2.matchTemplate(resized, template, cv2.TM_CCOEFF)
         (_, maxVal, _, maxLoc) = cv2.minMaxLoc(result)
         #  print("比例 %.3f\t最佳匹配值%.3f" % (scale, maxVal/ 10**7))
-        if show:
-            show_image(draw_rectangle(image, (tH, tW), maxLoc, 1/scale), close=False)
+        img = draw_rectangle(image, (tH, tW), maxLoc, 1/scale)
+        images.append((maxVal, img))
             
         # 更新最优位置
         if best_match is None or maxVal > best_match[0]:
             best_match = (maxVal, maxLoc, 1/scale)
-    if show:
-        show_image(draw_rectangle(image, (tH, tW), best_match[1], best_match[2]), close=False)
-        cv2.destroyAllWindows()
-    return best_match
+    img = draw_rectangle(image, (tH, tW), best_match[1], best_match[2])
+    images.append((best_match[0], img))
+    return best_match if not frames else images
