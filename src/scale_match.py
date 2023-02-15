@@ -39,7 +39,7 @@ def detect_image(image, template, num_step = num_step, frames = False):
         tuple: 最佳匹配值，最佳匹配位置，放缩比例
     """
     # 收集匹配过程的图片
-    images = [image]
+    images = [(0., image)]
 
     # 模板尺寸
     (tH, tW) = template.shape[:2]
@@ -64,10 +64,12 @@ def detect_image(image, template, num_step = num_step, frames = False):
         result = cv2.matchTemplate(resized, template, cv2.TM_CCOEFF)
         (_, maxVal, _, maxLoc) = cv2.minMaxLoc(result)
         #  print("比例 %.3f\t最佳匹配值%.3f" % (scale, maxVal/ 10**7))
-        images.append(draw_rectangle(image, (tH, tW), maxLoc, 1/scale))
+        img = draw_rectangle(image, (tH, tW), maxLoc, 1/scale)
+        images.append((maxVal, img))
             
         # 更新最优位置
         if best_match is None or maxVal > best_match[0]:
             best_match = (maxVal, maxLoc, 1/scale)
-    images.append(draw_rectangle(image, (tH, tW), best_match[1], best_match[2]))
+    img = draw_rectangle(image, (tH, tW), best_match[1], best_match[2])
+    images.append((best_match[0], img))
     return best_match if not frames else images
