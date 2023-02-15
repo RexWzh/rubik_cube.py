@@ -173,6 +173,41 @@ class Cube():
             return "".join(U) + "".join(R) + "".join(F) + "".join(D) + "".join(L) + "".join(B)
         return U, L, F, B, R, D
     
+    def update_color_distribution(self) -> None:
+        pass
+    
+    def read_pixels_of_ULR(self, img, rotate = 0):
+        """获取魔方三个面的像素值"""
+        def _get_pixels(img, locs):
+            return [img.getpixel(loc) for loc in locs]
+        # TODO: 处理旋转索引置换规则
+        return _get_pixels(img, self.ups), _get_pixels(img, self.lefts), _get_pixels(img, self.rights)
+    
+    def _get_distribution_of_six_faces(self):
+        """获取魔方六个面不同方向的图像"""
+        def _leftdown(rotate=0):
+            self._shift_direction("L")
+            self._shift_direction("D")
+            img = pg.screenshot()
+            return self.read_pixels_of_ULR(img, rotate=rotate)
+        
+        self._move2center()
+        # 正视图
+        img = pg.screenshot() # 标准图
+        ULRs = []
+        ULRs.append(self.read_pixels_of_ULR(img, rotate=0)) # 获取初始三面
+        ULRs.append(_leftdown(rotate=1)) # 顺时针 120°
+        ULRs.append(_leftdown(rotate=2)) # 顺时针 240°
+        self.shift_faces() # 切换背面
+        time.sleep(0.5)
+        # 反视图
+        img = pg.screenshot()
+        ULRs.append(self.read_pixels_of_ULR(img, rotate=0)) # 获取背面
+        ULRs.append(_leftdown(rotate=1)) # 顺时针 120°
+        ULRs.append(_leftdown(rotate=2)) # 顺时针 240°
+        self.shift_faces(back=True) # 切回原来面
+        return ULRs
+
     def shift_faces(self, back=False) -> None:
         """左滑和上移，将魔方切换到背面
         
@@ -190,6 +225,7 @@ class Cube():
         Args:
             direct (str): 滑动方向，L/R/U/D
         """
+        assert direct in "LRUD" and len(direct) == 1, "指令有误"
         corner, str2loc = self.corner, self.str2loc
         pg.moveTo(corner, duration=0.1)
         pg.dragRel(*str2loc[direct], duration=0.25, button="left")
@@ -296,7 +332,7 @@ class Cube():
         left_origin, right_origin, up_origin = [center + i // 2 for i in [left + down, right + down, left + right]]
         lefts = [[left_origin + (2 - i) * left + j * down for i in range(3)] for j in range(3)]
         rights = [[right_origin + i * right + j * down for i in range(3)] for j in range(3)]
-        ups = [[up_origin + i * right + (2 - j) * left for i in range(3)]for j in range(3)]
+        ups = [[up_origin + i * right + (2 - j) * left for i in range(3)] for j in range(3)]
         self.lefts = facets_to_tuple(lefts)
         self.rights = facets_to_tuple(rights)
         self.ups = facets_to_tuple(ups)
