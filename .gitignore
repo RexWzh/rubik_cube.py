@@ -2,3 +2,6 @@
 __pycache__
 debug/
 .vscode/
+*.mp4
+*.idea/
+.DS_Store
