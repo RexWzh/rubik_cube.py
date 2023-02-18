@@ -5,7 +5,7 @@ import kociemba as kb
 import numpy as np
 import time, cv2
 from rubik.data import template_path, color_to_facet
-from rubik.tools import PIL2cv, check_positions, find_color, array_to_tuple, facets_to_tuple, cv2PIL, expand_cube
+from rubik.tools import PIL2cv, check_positions, find_color, array_to_tuple, facets_to_tuple, cv2PIL, expand_cube, screenshot
 from rubik.scale_match import detect_image, show_image, draw_rectangle
 from rubik.group import GroupElement
 
@@ -25,7 +25,7 @@ class Cube():
            - 运算需要的数值信息（字典）： operate_dict
            - 运算的时间间隔： interval
         """
-        self._cube_dectection()
+        self._cube_detection()
         self._init_facet_positions()
         self._init_operate_dict()
         self.interval = interval # 操作时间间隔
@@ -36,6 +36,7 @@ class Cube():
         Args:
             wait (bool, optional): wait for input. Defaults to True.
         """
+        # 识别魔方
         cube_code = self.get_cube_distribution(string_code = True)
         print("魔方识别完毕")
         solution = self.solvebykociemba(cube_code)
@@ -43,6 +44,8 @@ class Cube():
         time.sleep(.4)
         if wait:
             input("按回车开始还原魔方")
+        # 还原魔方
+        self._move2center()
         for op in solution:
             self.cube_operate(op)
         print("魔方已还原，请检查")
@@ -117,6 +120,24 @@ class Cube():
                 time.sleep(0.5)
         return 
     
+    def shift_center(self, back=False):
+        """换心公式
+        
+        Args:
+           back (bool, optional): 是否使用逆公式，默认否
+        """
+        self._move2center()
+        center = self.ups[4]
+        left, right = self.left, self.right
+        if not back:
+            seq = [array_to_tuple(i) for i in [left, right, -left, -right]]
+        else:
+            seq = [array_to_tuple(i) for i in [right, left, -right, -left]]
+        for p in seq:
+            pg.moveTo(center)
+            pg.dragRel(p[0], p[1], duration = 0.25, button="left")
+        return
+    
     def show_detection(self, openwindow = True):
         """显示检查到的图像"""
         if openwindow:
@@ -124,7 +145,7 @@ class Cube():
         else:
             return cv2PIL(draw_rectangle(self.image, template.shape, self.Loc, self.ratio))
         return
-        
+    
     ## 函数工具 ##
     def color_distribution(self, im, shift = False, abbr = True):
         """获取截图三面的颜色分布
@@ -154,30 +175,16 @@ class Cube():
             list/string: 返回字符列表，或者字符串
         """
         self._move2center()
-        img = pg.screenshot() # 截图
+        img = screenshot() # 截图
         U, L, F = self.color_distribution(img) # 获取初始三面
         self.shift_faces() # 切换背面
         time.sleep(0.5)
-        img = pg.screenshot()
+        img = screenshot()
         B, R, D = self.color_distribution(img, shift=True) # 获取背面
         self.shift_faces(back=True) # 切回原来面
         if string_code:
             return "".join(U) + "".join(R) + "".join(F) + "".join(D) + "".join(L) + "".join(B)
         return U, L, F, B, R, D
-    
-    def shift_faces(self, back=False) -> None:
-        """左滑和上移，将魔方切换到背面
-        
-        Args:
-           back (bool, optional): 是否从背面返回正面，默认从正面到背面
-        """
-        d = int(self.down[1])
-        corner = array_to_tuple(self.center + (3 * d, 3 * d))
-        seq = [(-d, 0), (-d, 0), (0, -d)] if not back else [(0, d), (d, 0), (d, 0)]
-        for i, j in seq:
-            pg.moveTo(corner, duration=0.1)
-            pg.dragRel(i, j, duration=0.25, button="left")
-        return
     
     def cube_operate(self, op):
         """将魔方字符转为具体操作
@@ -199,22 +206,15 @@ class Cube():
             pg.dragRel(rel[0], rel[1], duration=interval, button="left")
         return 
     
-    def shift_center(self, back=False):
-        """换心公式
+    def shift_faces(self, back=False) -> None:
+        """左滑和上移，将魔方切换到背面
         
         Args:
-           back (bool, optional): 是否使用逆公式，默认否
+           back (bool, optional): 是否从背面返回正面，默认从正面到背面
         """
-        self._move2center()
-        center = self.ups[4]
-        left, right = self.left, self.right
-        if not back:
-            seq = [array_to_tuple(i) for i in [left, right, -left, -right]]
-        else:
-            seq = [array_to_tuple(i) for i in [right, left, -right, -left]]
-        for p in seq:
-            pg.moveTo(center)
-            pg.dragRel(p[0], p[1], duration = 0.25, button="left")
+        seq = "LLU" if not back else "DRR"
+        for op in seq:
+            self._shift_direction(op)
         return
     
     def to_cube_state(self, state: str = None) -> list:
@@ -248,6 +248,72 @@ class Cube():
         self.get_cube_distribution()
         return mixsol
 
+    def _shift_direction(self, direct:str)-> None:
+        """左滑/右滑/上移/下移
+
+        Args:
+            direct (str): 滑动方向，L/R/U/D
+        """
+        assert direct in "LRUD" and len(direct) == 1, "指令有误"
+        corner, str2loc = self.corner, self.str2loc
+        pg.moveTo(corner, duration=0.1)
+        pg.dragRel(*str2loc[direct], duration=0.25, button="left")
+        return 
+    
+    def _read_pixels_of_ULF(self, img=None, rotate = 0):
+        """获取魔方三个面的像素值
+        
+        ## 规则
+        
+        rotate 影响小面的读取顺序，当 rotate = 1 时，当前图像进行了 120° 旋转，即 U 移动到 F, F 移动到 L, L 移动到 U
+        """
+        if img is None:
+            img = self.image_pil
+        def _get_pixels(img, locs):
+            return [img.getpixel(loc)[:-1] for loc in locs]
+        rotate %= 3
+        # 无旋转情形
+        if rotate == 0: # TODO：修正索引比例
+            return _get_pixels(img, self.ups), _get_pixels(img, self.lefts), _get_pixels(img, self.rights)
+        
+        # 初始化
+        if rotate == 2: rotate = -1 # 逆时针 120°
+        reorder = (2, 5, 8, 1, 4, 7, 0, 3, 6)[::rotate]
+        # pixels = [[None] * 9 for _ in range(3)]
+        pixels = []
+
+        for locs in [self.ups, self.lefts, self.rights]:
+            locs = [locs[i] for i in reorder]
+            pixels.append(_get_pixels(img, locs))
+        perm = (1, 2, 0) if rotate == 1 else (2, 0, 1)
+        return [pixels[i] for i in perm]
+    
+    def _get_pixels_of_six_faces(self):
+        """获取魔方六个面不同方向的图像"""
+        def _leftdown(rotate=0):
+            self._shift_direction("L")
+            self._shift_direction("D")
+            img = screenshot()
+            return self._read_pixels_of_ULF(img, rotate=rotate)
+        
+        self._move2center()
+        ULFs = []
+        # 正视图
+        img = screenshot() # 标准图
+        ULFs.append(self._read_pixels_of_ULF(img, rotate=0)) # 获取初始三面
+        ULFs.append(_leftdown(rotate=1)) # 顺时针 120°
+        ULFs.append(_leftdown(rotate=2)) # 顺时针 240°
+        # 切换背面
+        self.shift_faces()
+        time.sleep(0.5)
+        # 反视图
+        img = screenshot()
+        ULFs.append(self._read_pixels_of_ULF(img, rotate=0)) # 获取背面
+        ULFs.append(_leftdown(rotate=1)) # 顺时针 120°
+        ULFs.append(_leftdown(rotate=2)) # 顺时针 240°
+        self.shift_faces(back=True) # 切回原来面
+        return ULFs
+    
     def _move2center(self, click=True):
         """将魔方移动魔方中心"""
         pg.moveTo(tuple(self.center))
@@ -255,16 +321,24 @@ class Cube():
             pg.click()
         return
     
-    def _cube_dectection(self):
+    def _cube_detection(self):
         """检测魔方位置信息"""
-        self.image = image = PIL2cv(pg.screenshot())
+        img_pil = screenshot()
+        image = PIL2cv(img_pil)
+        self.image_pil, self.image = img_pil, image
+        # 图像检测
         _, Loc, ratio = detect_image(image, template)
-        pgsize = pg.size()
-        imgscale = pgsize[0] / image.shape[1] * ratio
-        l1 = 200 * imgscale
+        l1 = 200 * ratio
         l2, l3 = l1 * 208 // 246, l1 * 122 // 246
+        # 魔方三个中心小面的中心点
         self.left, self.right, self.down = [np.array(p) // 3 for p in [[-l2, -l3], [l2, -l3], [0, l1]]]
-        self.center = imgscale * np.array([Loc[0]+188, Loc[1] + 200])
+        # 魔方中心点
+        self.center = ratio * np.array([Loc[0]+188, Loc[1] + 200])        
+        # 魔方右下的角落
+        unit = int(self.down[1]) # 单位长度
+        self.corner = array_to_tuple(self.center + (3 * unit, 3 * unit))
+        self.str2loc = {"L": (-unit, 0), "R": (unit, 0), "U": (0, -unit), "D": (0, unit)}
+        # 最佳定位位置和比例
         self.Loc, self.ratio = Loc, ratio
 
     def _init_facet_positions(self):
@@ -273,7 +347,7 @@ class Cube():
         left_origin, right_origin, up_origin = [center + i // 2 for i in [left + down, right + down, left + right]]
         lefts = [[left_origin + (2 - i) * left + j * down for i in range(3)] for j in range(3)]
         rights = [[right_origin + i * right + j * down for i in range(3)] for j in range(3)]
-        ups = [[up_origin + i * right + (2 - j) * left for i in range(3)]for j in range(3)]
+        ups = [[up_origin + i * right + (2 - j) * left for i in range(3)] for j in range(3)]
         self.lefts = facets_to_tuple(lefts)
         self.rights = facets_to_tuple(rights)
         self.ups = facets_to_tuple(ups)

@@ -4,13 +4,24 @@ import time, cv2
 from PIL import Image
 from rubik.data import colors, inds_txt, init_state, compact_inds_txt
 
-"""
-图像操作和运算的函数工具
+screenshot = lambda : pg.screenshot().resize(pg.size())
+screenshot.__doc__ = """屏幕截图
+
+## 特别留意
+
+pyautogui 截图的像素坐标和实际操作的坐标存在差异，这里使用 resize 调整
+
+Ref: https://stackoverflow.com/questions/45302681/running-pyautogui-on-a-different-computer-with-different-resolution
 """
 
 def cv2PIL(img_cv):
-    """
+    """opencv 图像转 PIL 图像
+
+    Args:
+        img_cv (numpy.ndarray): 输入图像
     
+    Returns:
+        PILImage: 输出图像
     """
     return Image.fromarray(cv2.cvtColor(img_cv, cv2.COLOR_BGR2RGB))
 
