@@ -2,7 +2,7 @@ import cv2, imutils
 import numpy as np
 
 # 模板放缩范围
-min_scale, max_scale, num_step = (0.8, 3, 50)
+min_scale, max_scale, num_step = (0.5, 3, 150)
 
 def show_image(img, title="image", close = True):
     cv2.imshow(title, img)
