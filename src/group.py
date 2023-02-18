@@ -1,3 +1,6 @@
+import kociemba as kb
+
+
 # 魔方群置换
 class GroupElement(object):
     def __init__(self, perm):
@@ -183,7 +186,6 @@ class GroupElement(object):
     def __str__(self):
         return self.perm.__str__()
 
-
 permdict = {
     'U':[2, 4, 7, 1, 6, 0, 3, 5, 16, 17, 18, 11,
          12, 13, 14, 15, 32, 33, 34, 19, 20, 21, 22, 23,
@@ -210,3 +212,49 @@ permdict = {
          24, 25, 26, 27, 28, 15, 12, 10, 29, 33, 34, 30,
          36, 31, 38, 39, 42, 44, 47, 41, 46, 40, 43, 45]
 }
+
+# 魔方中心置换
+init_state = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
+
+default_centers = "URFDLB" # 上，右，前，下，左，后
+
+valid_centers = [
+    'URFDLB', 'ULBDRF', 'LBURFD',
+    'LFDRBU', 'DLFURB', 'DRBULF',
+    'RBDLFU', 'RFULBD', 'FURBDL',
+    'FDLBUR', 'BULFDR', 'BDRFUL'
+]
+is_valid_center = lambda cen: cen in valid_centers
+
+def shift_color(state:str, new_centers:str, skipcenter=False):
+    """转化魔方上的颜色
+    state: 魔方状态
+    new_centers: 新的中心颜色
+    skipcenter: 是否保留中心颜色
+    """
+    raw_centers = state[4::9]
+    state = "".join(new_centers[raw_centers.index(i)] for i in state)
+    if not skipcenter: return state
+    state = list(state)
+    state[4::9] = raw_centers
+    return ''.join(state)
+
+def standardize_center(state):
+    """将魔方状态的颜色转化为标准形式"""
+    cen = state[4::9]
+    assert is_valid_center(cen), "魔方中心颜色无效！"
+    return shift_color(state, default_centers)
+
+def is_valid_cube(state):
+    if not is_valid_center(state): return False
+    try:
+        kb.solve(state)
+        return True
+    except:
+        return False
+
+# Test
+# assert len(valid_centers) == 12 == len(set(valid_centers))
+# for cens in valid_centers:
+#     state = shift_color(init_state, cens, skipcenter=True)
+#     print(kb.solve(state))

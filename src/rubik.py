@@ -61,11 +61,6 @@ class Cube():
         Returns:
             list: 魔方还原步骤
         """
-        ## 检查魔方中心
-        cens = cube_code[4::9]
-        if len(set(cens)) == 6 and len(set(cens)) != "URFDLB":
-            ## TODO: 通过群元素计算，将中心非对齐形式转化为对齐形式
-            raise ValueError("魔方中心颜色错误，需将魔方中心对齐为初始形式(TODO)\n上左右：白红蓝")
         try:
             sol = kb.solve(cube_code)
         except:
