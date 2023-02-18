@@ -3,11 +3,10 @@
 # date: 2022-04-19
 # description: 打开魔方插件，并双击进入待准备状态；在项目目录下，运行 `python src/tostate.py` 将魔方化为指定状态。
 import sys
-sys.path.append("./src/")
-sys.path.append("../src/")
+sys.path.append("..")
 import time
 
-from tools import expand_cube
+from rubik.tools import expand_cube
 import kociemba as kb
 from rubik import Cube
 

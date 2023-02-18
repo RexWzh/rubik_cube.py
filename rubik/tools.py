@@ -2,7 +2,7 @@ import numpy as np
 import pyautogui as pg
 import time, cv2
 from PIL import Image
-from data import colors, inds_txt, init_state, compact_inds_txt
+from rubik.data import colors, inds_txt, init_state, compact_inds_txt
 
 """
 图像操作和运算的函数工具

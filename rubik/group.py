@@ -1,6 +1,5 @@
 import kociemba as kb
 
-
 # 魔方群置换
 class GroupElement(object):
     def __init__(self, perm):
@@ -252,9 +251,3 @@ def is_valid_cube(state):
         return True
     except:
         return False
-
-# Test
-# assert len(valid_centers) == 12 == len(set(valid_centers))
-# for cens in valid_centers:
-#     state = shift_color(init_state, cens, skipcenter=True)
-#     print(kb.solve(state))

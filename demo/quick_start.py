@@ -3,8 +3,7 @@
 # date: 2022-04-19
 # description: 打开魔方插件，并双击进入待准备状态；在项目目录下，运行 `python src/quick_start.py` 进行魔方还原。
 import sys
-sys.path.append("./src/")
-sys.path.append("../src/")
+sys.path.append("..")
 from rubik import *
 
 while True:
