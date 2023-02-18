@@ -2,7 +2,7 @@ import numpy as np
 import pyautogui as pg
 import time, cv2
 from PIL import Image
-from data import colors,init_txt
+from data import colors, inds_txt, init_state, compact_inds_txt
 
 """
 图像操作和运算的函数工具
@@ -104,7 +104,7 @@ def find_color(img, pos, side = 0) -> str:
     color = img.getpixel(pos)
     return min(colors.keys(), key = lambda c: diff(colors[c][side], color))
 
-def expand_cube(state: str = "") -> str:
+def expand_cube(state: str = "", compact=True) -> str:
     """返回魔方状态的展开图
 
     Args:
@@ -116,10 +116,11 @@ def expand_cube(state: str = "") -> str:
     还原状态：
        - UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB
     """
+    
     if not state: # 返回初始状态
-        state = init_txt
-    res = init_txt
-    for i,face in enumerate("URFDLB"):
+        state = init_state
+    res = inds_txt if not compact else compact_inds_txt
+    for i, face in enumerate("URFDLB"):
         for j in range(9):
             res = res.replace(face + str(j+1), state[9 * i + j])
     return res
