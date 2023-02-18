@@ -1,19 +1,16 @@
+__version__ = "0.1.0"
+
 import pyautogui as pg
 import kociemba as kb
 import numpy as np
 import time, cv2
-from data import template_path, color_to_facet
-from tools import PIL2cv, check_positions, find_color, array_to_tuple, facets_to_tuple, cv2PIL, expand_cube
-from scale_match import detect_image, show_image, draw_rectangle
-from group import GroupElement
+from rubik.data import template_path, color_to_facet
+from rubik.tools import PIL2cv, check_positions, find_color, array_to_tuple, facets_to_tuple, cv2PIL, expand_cube
+from rubik.scale_match import detect_image, show_image, draw_rectangle
+from rubik.group import GroupElement
 
 template = cv2.imread(template_path)
-if template is None:
-    template = cv2.imread("../src/" + template_path)
-if template is None:
-    template = cv2.imread("./src/" + template_path)
-assert template is not None, "未能读取模板文件，请在 src/ 目录下运行代码！"
-
+assert template is not None, "未能读取模板文件！"
 
 class Cube():
     def __init__(self, interval:float = 0.2):
@@ -61,11 +58,6 @@ class Cube():
         Returns:
             list: 魔方还原步骤
         """
-        ## 检查魔方中心
-        cens = cube_code[4::9]
-        if len(set(cens)) == 6 and len(set(cens)) != "URFDLB":
-            ## TODO: 通过群元素计算，将中心非对齐形式转化为对齐形式
-            raise ValueError("魔方中心颜色错误，需将魔方中心对齐为初始形式(TODO)\n上左右：白红蓝")
         try:
             sol = kb.solve(cube_code)
         except:

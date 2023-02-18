@@ -1,0 +1,28 @@
+[project]
+name = "rubik_cube"
+version = "0.1.0"
+authors = [
+  { name="Rex Wang", email="1073853456@qq.com" },
+]
+description = "Python tool for solving rubik cube"
+readme = "README.md"
+requires-python = ">=3.5"
+license = {file = "LICENSE"}
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "numpy",
+    "opencv-python",
+    "pyautogui",
+    "kociemba",
+    "imutils",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/RexWzh/rubik_cube.py"
+"Bug Tracker" = "https://github.com/RexWzh/rubik_cube.py/issues"

@@ -1,5 +1,6 @@
 # 模板路径
-template_path = "template.png"
+import rubik
+template_path = rubik.__file__.replace("__init__.py", "assets/template.png")
 
 # 颜色和小面位置相互转化（字典）
 color_to_facet = {"white":"U", "red":"L", "blue":"F", "green":"B", "orange":"R", "yellow":"D"}
