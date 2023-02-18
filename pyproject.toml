@@ -21,10 +21,8 @@ dependencies = [
     "pyautogui",
     "kociemba",
     "imutils",
-
 ]
 
 [project.urls]
 "Homepage" = "https://github.com/RexWzh/rubik_cube.py"
 "Bug Tracker" = "https://github.com/RexWzh/rubik_cube.py/issues"
-
