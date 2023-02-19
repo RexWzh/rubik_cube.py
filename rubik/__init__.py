@@ -7,7 +7,7 @@ import time, cv2
 from rubik.data import template_path, color_table
 from rubik.tools import PIL2cv, check_positions, array_to_tuple, facets_to_tuple, cv2PIL, expand_cube, screenshot, face_rotate
 from rubik.scale_match import detect_image, show_image, draw_rectangle
-from rubik.group import GroupElement, is_valid_cube
+from rubik.group import GroupElement, is_valid_cube, default_centers, shift_color
 
 template = cv2.imread(template_path)
 assert template is not None, "未能读取模板文件！"
@@ -42,7 +42,7 @@ class Cube():
         """
         # 识别魔方
         if state is None:
-            cube_code = self.get_cube_distribution(string_code = True)
+            cube_code = self.get_cube_distribution()
         else:
             cube_code = state
         print("魔方识别完毕")
@@ -153,11 +153,8 @@ class Cube():
             return cv2PIL(draw_rectangle(self.image, template.shape, self.Loc, self.ratio))
         return
     
-    def get_cube_distribution(self, string_code=False) -> list:
+    def get_cube_distribution(self) -> list:
         """获取魔方的分布信息
-
-        Args:
-            string_code (bool, optional): 是否返回魔方字符代码. 默认返回字符代码构成的列表
         Returns:
             list/string: 返回字符列表，或者字符串
         """
@@ -174,9 +171,10 @@ class Cube():
         B, R, D = [[self.pixel2color(pix, i) for pix in face] for i, face in enumerate(BRD)]
         self.shift_faces(back=True)
         # 切回原来面，并返回识别结果
-        if string_code:
-            return "".join(U) + "".join(R) + "".join(F) + "".join(D) + "".join(L) + "".join(B)
-        return U, L, F, B, R, D
+        state = "".join(U) + "".join(R) + "".join(F) + "".join(D) + "".join(L) + "".join(B)
+        if state[4::9] != default_centers:
+            state = shift_color(state, default_centers)
+        return state
     
     def shift_faces(self, back=False) -> None:
         """左滑和上移，将魔方切换到背面
@@ -189,7 +187,7 @@ class Cube():
             self._shift_direction(op)
         return
     
-    def to_cube_state(self, state: str = None) -> list:
+    def to_cube_state(self, curstate:str = None, state: str = None) -> list:
         """将打乱的魔方化为给定魔方状态，并求解
         
         Args:
@@ -202,7 +200,9 @@ class Cube():
         if state is None:
             state = "DUDUUUDUDBRBRRRBRBLFLFFFLFLUDUDDDUDUFLFLLLFLFRBRBBBRBR"
         # 当前状态
-        curstate = self.get_cube_distribution(string_code = True)
+        if curstate is None:
+            curstate = self.get_cube_distribution()
+        assert state[4::9] == default_centers, "目标状态中心颜色不正确！"
         cursol = kb.solve(curstate).split()[::-1] # 当前解法(作用从左到右，需反转)
         curact = GroupElement(''.join(cursol)) # 转化为群元素 action
         # 目标状态

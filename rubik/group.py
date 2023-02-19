@@ -217,14 +217,6 @@ init_state = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
 
 default_centers = "URFDLB" # 上，右，前，下，左，后
 
-valid_centers = [
-    'URFDLB', 'ULBDRF', 'LBURFD',
-    'LFDRBU', 'DLFURB', 'DRBULF',
-    'RBDLFU', 'RFULBD', 'FURBDL',
-    'FDLBUR', 'BULFDR', 'BDRFUL'
-]
-is_valid_center = lambda cen: cen in valid_centers
-
 def shift_color(state:str, new_centers:str, skipcenter=False):
     """转化魔方上的颜色
     state: 魔方状态
@@ -238,14 +230,8 @@ def shift_color(state:str, new_centers:str, skipcenter=False):
     state[4::9] = raw_centers
     return ''.join(state)
 
-def standardize_center(state, check=True):
-    """将魔方状态的颜色转化为标准形式"""
-    cen = state[4::9]
-    assert not check or is_valid_center(cen), "魔方中心颜色无效！"
-    return shift_color(state, default_centers)
-
 def is_valid_cube(state):
-    if not is_valid_center(state[4::9]): return False
+    assert state[4::9] == default_centers, "The center colors are not correct."
     try:
         kb.solve(state)
         return True
