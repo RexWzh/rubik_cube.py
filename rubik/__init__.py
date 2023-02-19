@@ -7,7 +7,7 @@ import time, cv2
 from rubik.data import template_path, color_table
 from rubik.tools import PIL2cv, check_positions, array_to_tuple, facets_to_tuple, cv2PIL, expand_cube, screenshot, face_rotate
 from rubik.scale_match import detect_image, show_image, draw_rectangle
-from rubik.group import GroupElement
+from rubik.group import GroupElement, is_valid_cube
 
 template = cv2.imread(template_path)
 assert template is not None, "未能读取模板文件！"
@@ -247,7 +247,8 @@ class Cube():
         2. Google 插件的魔方图像中，同色块在三个方向的像素有较大区别，所以匹配所在面的颜色信息，增加准确性。
         """
         diff = lambda c1, c2: sum(abs(i - j) for i, j in zip(c1, c2))
-        return min(color_table.keys(), key = lambda c: diff(color_table[c][side], pix))
+        color = self._color_table
+        return min(color.keys(), key = lambda c: diff(color[c][side], pix))
 
     def faces2state(self, faces, side=0):
         """像素值转为魔方状态"""
@@ -292,7 +293,10 @@ class Cube():
         if faces is None:
             faces = self._get_pixels_of_six_faces()
         states = [self.faces2state(face, side=i) for i, face in enumerate(faces)]
-        return states[0] == states[1] == states[2]
+        if not states[0] == states[1] == states[2]:
+            return False
+        state = states[0]
+        return is_valid_cube(state)
     
     def _read_pixels_of_ULF(self, img=None, rotates = None):
         """获取魔方三个面的像素值
