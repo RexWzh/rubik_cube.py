@@ -10,7 +10,7 @@ facet_to_color = {val:key for key, val in color_to_facet.items()}
 init_state = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
 
 # 上，左，右，处在三个位置时各颜色的数值
-colors = {'U': ((252, 244, 252), (222, 215, 222), (198, 192, 198)),
+color_table = {'U': ((252, 244, 252), (222, 215, 222), (198, 192, 198)),
           'L': ((236, 56, 35), (208, 50, 30), (186, 44, 27)),
           'F': ((64, 168, 198), (56, 148, 174), (51, 132, 155)),
           'B': ((128, 200, 55), (113, 176, 49), (101, 157, 44)),

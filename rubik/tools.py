@@ -2,7 +2,7 @@ import numpy as np
 import pyautogui as pg
 import time, cv2
 from PIL import Image
-from rubik.data import colors, inds_txt, init_state, compact_inds_txt, face_inds_txt
+from rubik.data import color_table, inds_txt, init_state, compact_inds_txt, face_inds_txt
 
 screenshot = lambda : pg.screenshot().resize(pg.size())
 screenshot.__doc__ = """屏幕截图
@@ -63,18 +63,6 @@ Returns:
 """
 
 
-diff = lambda c1, c2: sum(abs(i - j) for i, j in zip(c1, c2))
-diff.__doc__ = """计算位置差的绝对值之和
-
-Args:
-    c1 (tuple(int)): 整数元组，表示颜色信息，长度为 3
-    c1 (tuple(int)): 整数元组，表示颜色信息，长度为 3
-
-Returns:
-    int: 位置差的绝对值之和
-"""
-
-
 def check_positions(positions) -> None:
     """将鼠标依次移动到指定位置
 
@@ -92,25 +80,6 @@ def check_positions(positions) -> None:
         time.sleep(0.2)
         pg.moveTo(p)
     return
-
-def pixel2color(pix, side=0) -> str:
-    """返回与像素最匹配的颜色
-
-    Args:
-        pix (tuple(int, int, int)): 像素值
-        side (int, optional): 像素所在位置. Defaults to 0.
-
-    Returns:
-        str: 匹配到的颜色，比如 white
-    
-    补充说明：
-       1. side 参数如下：
-          - 0 小面位于上方
-          - 1 小面位于左侧
-          - 2 小面位于右侧
-       2. Google 插件的魔方图像中，同色块在三个方向的像素有较大区别，所以匹配所在面的颜色信息，增加准确性。
-    """
-    return min(colors.keys(), key = lambda c: diff(colors[c][side], pix))
 
 def expand_cube(state: str = "", compact=True) -> str:
     """返回魔方状态的展开图
