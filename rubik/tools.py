@@ -138,10 +138,13 @@ def expand_face(state):
     assert len(state) == 9, f"单面数目错误！请检查{len(state)}"
     return face_inds_txt.format(*state)
 
-def face_rotate(state, deg, string_code=True):
+def face_rotate(state, deg):
     """魔方面顺时针旋转 90°"""
     deg %= 4
     if deg == 0: return state
     order = (6, 3, 0, 7, 4, 1, 8, 5, 2)
-    state = ''.join(state[i] for i in order)
+    if isinstance(state, str): # 对 state 类型进行派发
+        state = ''.join(state[i] for i in order)
+    elif isinstance(state, list):
+        state = [state[i] for i in order]
     return face_rotate(state, deg - 1)
