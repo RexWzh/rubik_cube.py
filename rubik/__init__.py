@@ -34,14 +34,17 @@ class Cube():
             self.update_colortable(check=checkcolor)
         self.interval = interval # 操作时间间隔
     
-    def auto_solve_cube(self, wait=True):
+    def auto_solve_cube(self, state=None, wait=True):
         """自动求解魔方
         
         Args:
             wait (bool, optional): wait for input. Defaults to True.
         """
         # 识别魔方
-        cube_code = self.get_cube_distribution(string_code = True)
+        if state is None:
+            cube_code = self.get_cube_distribution(string_code = True)
+        else:
+            cube_code = state
         print("魔方识别完毕")
         solution = self.solvebykociemba(cube_code)
         print("还原需要 %d 步"%len(solution))
@@ -205,12 +208,12 @@ class Cube():
         # 目标状态
         targetsol = kb.solve(state).split()[::-1]
         targetact = GroupElement(''.join(targetsol))
-        assert (targetact.inv() * curact)(curstate) == state
+        assert (targetact.inv() * curact)(curstate) == state, "计算有误！"
         # 过渡状态
         mixstate = (curact.inv() * targetact).state()
         mixsol = kb.solve(mixstate).split() # 获取解法
         mixact = GroupElement(''.join(mixsol[::-1]))
-        assert mixact(curstate) == state
+        assert mixact(curstate) == state, "计算有误！"
         print("将魔方化为给定状态，步数", len(mixsol))
         for op in mixsol:
             self.cube_operate(op)
@@ -295,8 +298,7 @@ class Cube():
         states = [self.faces2state(face, side=i) for i, face in enumerate(faces)]
         if not states[0] == states[1] == states[2]:
             return False
-        state = states[0]
-        return is_valid_cube(state)
+        return is_valid_cube(states[0])
     
     def _read_pixels_of_ULF(self, img=None, rotates = None):
         """获取魔方三个面的像素值
