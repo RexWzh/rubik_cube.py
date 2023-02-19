@@ -5,7 +5,7 @@ import kociemba as kb
 import numpy as np
 import time, cv2
 from rubik.data import template_path, color_to_facet
-from rubik.tools import PIL2cv, check_positions, find_color, array_to_tuple, facets_to_tuple, cv2PIL, expand_cube, screenshot
+from rubik.tools import PIL2cv, check_positions, array_to_tuple, facets_to_tuple, cv2PIL, expand_cube, screenshot, pixel2color
 from rubik.scale_match import detect_image, show_image, draw_rectangle
 from rubik.group import GroupElement
 
@@ -155,9 +155,9 @@ class Cube():
             shift (bool, optional): 当前魔方是否为翻转后的魔方. Defaults to False.
             abbr (bool, optional): 是否返回简写(UDFBLR). Defaults to True.
         """
-        face_U = [find_color(im, p) for p in self.ups]
-        face_L = [find_color(im, p, 1) for p in self.lefts]
-        face_F = [find_color(im, p, 2) for p in self.rights]
+        face_U = [pixel2color(im.getpixel(p)) for p in self.ups]
+        face_L = [pixel2color(im.getpixel(p), 1) for p in self.lefts]
+        face_F = [pixel2color(im.getpixel(p), 2) for p in self.rights]
         if abbr:
             face_U, face_L, face_F = [[color_to_facet[i] for i in facets] for facets in [face_U, face_L, face_F]]
         if not shift: # 初始界面
@@ -245,7 +245,8 @@ class Cube():
         print("将魔方化为给定状态，步数", len(mixsol))
         for op in mixsol:
             self.cube_operate(op)
-        self.get_cube_distribution()
+        self.shift_faces()
+        self.shift_faces(back=True)
         return mixsol
 
     def _shift_direction(self, direct:str)-> None:

@@ -238,14 +238,14 @@ def shift_color(state:str, new_centers:str, skipcenter=False):
     state[4::9] = raw_centers
     return ''.join(state)
 
-def standardize_center(state):
+def standardize_center(state, check=True):
     """将魔方状态的颜色转化为标准形式"""
     cen = state[4::9]
-    assert is_valid_center(cen), "魔方中心颜色无效！"
+    assert not check or is_valid_center(cen), "魔方中心颜色无效！"
     return shift_color(state, default_centers)
 
 def is_valid_cube(state):
-    if not is_valid_center(state): return False
+    if not is_valid_center(state[4::9]): return False
     try:
         kb.solve(state)
         return True
