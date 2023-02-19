@@ -4,8 +4,8 @@ import pyautogui as pg
 import kociemba as kb
 import numpy as np
 import time, cv2
-from rubik.data import template_path, color_to_facet
-from rubik.tools import PIL2cv, check_positions, find_color, array_to_tuple, facets_to_tuple, cv2PIL, expand_cube, screenshot
+from rubik.data import template_path, color_table
+from rubik.tools import PIL2cv, check_positions, array_to_tuple, facets_to_tuple, cv2PIL, expand_cube, screenshot, face_rotate
 from rubik.scale_match import detect_image, show_image, draw_rectangle
 from rubik.group import GroupElement
 
@@ -13,7 +13,7 @@ template = cv2.imread(template_path)
 assert template is not None, "未能读取模板文件！"
 
 class Cube():
-    def __init__(self, interval:float = 0.2):
+    def __init__(self, interval:float = 0.2, updatecolor=False, checkcolor=False):
         """初始化
 
         Args:
@@ -28,6 +28,10 @@ class Cube():
         self._cube_detection()
         self._init_facet_positions()
         self._init_operate_dict()
+        if not updatecolor:
+            self._color_table = color_table
+        else:
+            self.update_colortable(check=checkcolor)
         self.interval = interval # 操作时间间隔
     
     def auto_solve_cube(self, wait=True):
@@ -146,26 +150,6 @@ class Cube():
             return cv2PIL(draw_rectangle(self.image, template.shape, self.Loc, self.ratio))
         return
     
-    ## 函数工具 ##
-    def color_distribution(self, im, shift = False, abbr = True):
-        """获取截图三面的颜色分布
-        
-        Args:
-            im (PIL.PngImagePlugin.PngImageFile): 截图图像
-            shift (bool, optional): 当前魔方是否为翻转后的魔方. Defaults to False.
-            abbr (bool, optional): 是否返回简写(UDFBLR). Defaults to True.
-        """
-        face_U = [find_color(im, p) for p in self.ups]
-        face_L = [find_color(im, p, 1) for p in self.lefts]
-        face_F = [find_color(im, p, 2) for p in self.rights]
-        if abbr:
-            face_U, face_L, face_F = [[color_to_facet[i] for i in facets] for facets in [face_U, face_L, face_F]]
-        if not shift: # 初始界面
-            return face_U, face_L, face_F
-        # 扭转后的界面
-        face_B, face_R, face_D = face_U, [face_L[i-1] for i in (7,4,1,8,5,2,9,6,3)], face_F[::-1]
-        return face_B, face_R, face_D
-    
     def get_cube_distribution(self, string_code=False) -> list:
         """获取魔方的分布信息
 
@@ -175,36 +159,21 @@ class Cube():
             list/string: 返回字符列表，或者字符串
         """
         self._move2center()
+        # 获取正面颜色分布
         img = screenshot() # 截图
-        U, L, F = self.color_distribution(img) # 获取初始三面
-        self.shift_faces() # 切换背面
+        ULF = self._read_pixels_of_ULF(img) # 获取像素值
+        U, L, F = [[self.pixel2color(pix, i) for pix in face] for i, face in enumerate(ULF)]
+        # 切换背面并获取分布
+        self.shift_faces()
         time.sleep(0.5)
         img = screenshot()
-        B, R, D = self.color_distribution(img, shift=True) # 获取背面
-        self.shift_faces(back=True) # 切回原来面
+        BRD = self._read_pixels_of_ULF(img, rotates=(0, 1, 2))
+        B, R, D = [[self.pixel2color(pix, i) for pix in face] for i, face in enumerate(BRD)]
+        self.shift_faces(back=True)
+        # 切回原来面，并返回识别结果
         if string_code:
             return "".join(U) + "".join(R) + "".join(F) + "".join(D) + "".join(L) + "".join(B)
         return U, L, F, B, R, D
-    
-    def cube_operate(self, op):
-        """将魔方字符转为具体操作
-        
-        Args:
-           op (str): 魔方操作的字符代码
-        """
-        assert len(op) <= 2, "指令有误"
-        operate_dict, interval = self.operate_dict, self.interval
-        pos, rel = operate_dict[op[0]] # 位置以及相对位移
-        pg.moveTo(pos)
-        if op[-1] == "2":
-            pg.dragRel(rel[0], rel[1], duration=interval, button="left")
-            pg.moveTo(pos)
-            pg.dragRel(rel[0], rel[1], duration=interval, button="left")
-        elif op[-1] == "'":
-            pg.dragRel(-rel[0], -rel[1], duration=interval, button="left")
-        else:
-            pg.dragRel(rel[0], rel[1], duration=interval, button="left")
-        return 
     
     def shift_faces(self, back=False) -> None:
         """左滑和上移，将魔方切换到背面
@@ -245,9 +214,68 @@ class Cube():
         print("将魔方化为给定状态，步数", len(mixsol))
         for op in mixsol:
             self.cube_operate(op)
-        self.get_cube_distribution()
+        self.shift_faces()
+        self.shift_faces(back=True)
         return mixsol
 
+    def update_colortable(self, check=False):
+        """更新魔方颜色"""
+        faces = self._get_pixels_of_six_faces()
+        cens = [[face[4] for face in side] for side in faces]
+        self._color_table = dict(
+            (face, tuple(cens[j][i] for j in range(3))) for i, face in enumerate("URFDLB"))
+        # OPTIONAL: 颜色取均值，增加准确性
+        if check:
+            assert self._test_colors(faces=faces), "颜色识别有误"
+        return self._color_table
+
+    def pixel2color(self, pix, side=0) -> str:
+        """返回与像素最匹配的颜色
+
+        Args:
+            pix (tuple(int, int, int)): 像素值
+            side (int, optional): 像素所在位置. Defaults to 0.
+
+        Returns:
+            str: 匹配到的颜色，比如 white
+        
+        补充说明：
+        1. side 参数如下：
+            - 0 小面位于上方
+            - 1 小面位于左侧
+            - 2 小面位于右侧
+        2. Google 插件的魔方图像中，同色块在三个方向的像素有较大区别，所以匹配所在面的颜色信息，增加准确性。
+        """
+        diff = lambda c1, c2: sum(abs(i - j) for i, j in zip(c1, c2))
+        return min(color_table.keys(), key = lambda c: diff(color_table[c][side], pix))
+
+    def faces2state(self, faces, side=0):
+        """像素值转为魔方状态"""
+        state = ""
+        for face in faces:
+            state += ''.join(self.pixel2color(pix, side=side) for pix in face)
+        return state
+
+    def cube_operate(self, op):
+        """将魔方字符转为具体操作
+        
+        Args:
+           op (str): 魔方操作的字符代码
+        """
+        assert len(op) <= 2, "指令有误"
+        operate_dict, interval = self.operate_dict, self.interval
+        pos, rel = operate_dict[op[0]] # 位置以及相对位移
+        pg.moveTo(pos)
+        if op[-1] == "2":
+            pg.dragRel(rel[0], rel[1], duration=interval, button="left")
+            pg.moveTo(pos)
+            pg.dragRel(rel[0], rel[1], duration=interval, button="left")
+        elif op[-1] == "'":
+            pg.dragRel(-rel[0], -rel[1], duration=interval, button="left")
+        else:
+            pg.dragRel(rel[0], rel[1], duration=interval, button="left")
+        return 
+    
     def _shift_direction(self, direct:str)-> None:
         """左滑/右滑/上移/下移
 
@@ -260,59 +288,54 @@ class Cube():
         pg.dragRel(*str2loc[direct], duration=0.25, button="left")
         return 
     
-    def _read_pixels_of_ULF(self, img=None, rotate = 0):
+    def _test_colors(self, faces=None):
+        if faces is None:
+            faces = self._get_pixels_of_six_faces()
+        states = [self.faces2state(face, side=i) for i, face in enumerate(faces)]
+        return states[0] == states[1] == states[2]
+    
+    def _read_pixels_of_ULF(self, img=None, rotates = None):
         """获取魔方三个面的像素值
         
-        ## 规则
-        
-        rotate 影响小面的读取顺序，当 rotate = 1 时，当前图像进行了 120° 旋转，即 U 移动到 F, F 移动到 L, L 移动到 U
+        变量 rotate 用于修正魔方的旋转
         """
         if img is None:
             img = self.image_pil
-        def _get_pixels(img, locs):
-            return [img.getpixel(loc)[:-1] for loc in locs]
-        rotate %= 3
-        # 无旋转情形
-        if rotate == 0: # TODO：修正索引比例
-            return _get_pixels(img, self.ups), _get_pixels(img, self.lefts), _get_pixels(img, self.rights)
-        
-        # 初始化
-        if rotate == 2: rotate = -1 # 逆时针 120°
-        reorder = (2, 5, 8, 1, 4, 7, 0, 3, 6)[::rotate]
-        # pixels = [[None] * 9 for _ in range(3)]
-        pixels = []
-
-        for locs in [self.ups, self.lefts, self.rights]:
-            locs = [locs[i] for i in reorder]
-            pixels.append(_get_pixels(img, locs))
-        perm = (1, 2, 0) if rotate == 1 else (2, 0, 1)
-        return [pixels[i] for i in perm]
+        if rotates is None:
+            rotates = [0, 0, 0]
+        rotates = [r % 4 for r in rotates] # mod 4
+        ULF = [[img.getpixel(loc)[:3] for loc in locs] for locs in [self.ups, self.lefts, self.rights]]
+        return [face_rotate(face, r) for face, r in zip(ULF, rotates)]
     
     def _get_pixels_of_six_faces(self):
         """获取魔方六个面不同方向的图像"""
-        def _leftdown(rotate=0):
+        def _leftdown(rotates=None):
             self._shift_direction("L")
             self._shift_direction("D")
             img = screenshot()
-            return self._read_pixels_of_ULF(img, rotate=rotate)
+            return self._read_pixels_of_ULF(img, rotates=rotates)
         
         self._move2center()
-        ULFs = []
+        # 一共截六次图，每次截图三个面，共 18 个面
+        faces = [None] * 6
         # 正视图
         img = screenshot() # 标准图
-        ULFs.append(self._read_pixels_of_ULF(img, rotate=0)) # 获取初始三面
-        ULFs.append(_leftdown(rotate=1)) # 顺时针 120°
-        ULFs.append(_leftdown(rotate=2)) # 顺时针 240°
+        U0, L1, F2 = self._read_pixels_of_ULF(img, rotates=(0, 0, 0)) # 获取初始三面
+        L0, F1, U2 = _leftdown(rotates=(2, 3, 3)) # 顺时针 120°
+        F0, U1, L2 = _leftdown(rotates=(1, 2, 1)) # 顺时针 240°
         # 切换背面
         self.shift_faces()
         time.sleep(0.5)
         # 反视图
         img = screenshot()
-        ULFs.append(self._read_pixels_of_ULF(img, rotate=0)) # 获取背面
-        ULFs.append(_leftdown(rotate=1)) # 顺时针 120°
-        ULFs.append(_leftdown(rotate=2)) # 顺时针 240°
+        R0, D1, B2 = self._read_pixels_of_ULF(img, rotates=(3, 1, 3)) # 获取背面
+        D0, B1, R2 = _leftdown(rotates=(3, 2, 2)) # 顺时针 120°
+        B0, R1, D2 = _leftdown(rotates=(0, 1, 2)) # 顺时针 240°
         self.shift_faces(back=True) # 切回原来面
-        return ULFs
+        
+        return [[U0, R0, F0, D0, L0, B0],
+                [U1, R1, F1, D1, L1, B1],
+                [U2, R2, F2, D2, L2, B2],]
     
     def _move2center(self, click=True):
         """将魔方移动魔方中心"""

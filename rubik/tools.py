@@ -2,7 +2,7 @@ import numpy as np
 import pyautogui as pg
 import time, cv2
 from PIL import Image
-from rubik.data import colors, inds_txt, init_state, compact_inds_txt
+from rubik.data import color_table, inds_txt, init_state, compact_inds_txt, face_inds_txt
 
 screenshot = lambda : pg.screenshot().resize(pg.size())
 screenshot.__doc__ = """屏幕截图
@@ -63,18 +63,6 @@ Returns:
 """
 
 
-diff = lambda c1, c2: sum(abs(i - j) for i, j in zip(c1, c2))
-diff.__doc__ = """计算位置差的绝对值之和
-
-Args:
-    c1 (tuple(int)): 整数元组，表示颜色信息，长度为 3
-    c1 (tuple(int)): 整数元组，表示颜色信息，长度为 3
-
-Returns:
-    int: 位置差的绝对值之和
-"""
-
-
 def check_positions(positions) -> None:
     """将鼠标依次移动到指定位置
 
@@ -92,28 +80,6 @@ def check_positions(positions) -> None:
         time.sleep(0.2)
         pg.moveTo(p)
     return
-
-
-def find_color(img, pos, side = 0) -> str:
-    """返回指定位置像素点匹配的颜色
-
-    Args:
-        img (PIL.PngImagePlugin.PngImageFile): `pyautogui.screenshot()` 的截图图像
-        pos (tuple(int, int)): 像素位置
-        side (int, optional): 像素所在位置. Defaults to 0.
-
-    Returns:
-        str: 匹配到的颜色，比如 white
-    
-    补充说明：
-       1. side 参数如下：
-          - 0 小面位于上方
-          - 1 小面位于左侧
-          - 2 小面位于右侧
-       2. Google 插件的魔方图像中，同色块在三个方向的像素有较大区别，所以匹配所在面的颜色信息，增加准确性。
-    """
-    color = img.getpixel(pos)
-    return min(colors.keys(), key = lambda c: diff(colors[c][side], color))
 
 def expand_cube(state: str = "", compact=True) -> str:
     """返回魔方状态的展开图
@@ -135,3 +101,19 @@ def expand_cube(state: str = "", compact=True) -> str:
         for j in range(9):
             res = res.replace(face + str(j+1), state[9 * i + j])
     return res
+
+def expand_face(state):
+    """魔方一面的展开图"""
+    assert len(state) == 9, f"单面数目错误！请检查{len(state)}"
+    return face_inds_txt.format(*state)
+
+def face_rotate(state, deg):
+    """魔方面顺时针旋转 90°"""
+    deg %= 4
+    if deg == 0: return state
+    order = (6, 3, 0, 7, 4, 1, 8, 5, 2)
+    if isinstance(state, str): # 对 state 类型进行派发
+        state = ''.join(state[i] for i in order)
+    elif isinstance(state, list):
+        state = [state[i] for i in order]
+    return face_rotate(state, deg - 1)
