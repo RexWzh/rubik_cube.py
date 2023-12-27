@@ -1,6 +1,7 @@
 # 魔方自动还原
 
-**工具原理及使用演示**： [一行代码“玩转”魔方 | Python](https://www.bilibili.com/video/BV1yU4y1B71P)
+> **工具原理及使用演示**： [一行代码“玩转”魔方 | Python](https://www.bilibili.com/video/BV1yU4y1B71P)
+> 演示 Jupyter 文件地址：[demo-jupyter.ipynb](https://github.com/RexWzh/rubik_cube.py/blob/demo/demo-jupyter.ipynb)
 
 在 B 站看到一个用 Python 复原魔方的[视频](https://www.bilibili.com/video/BV12i4y1G74V)，觉得还蛮有意思，就自己动手写了个工具。废话不多说，先看演示吧。
 
@@ -39,7 +40,15 @@
 
 ### 使用方法
 
-> 特别说明：`<仓库>/demo` 目录下有两个 Jupyter 文件，其中 `demo-jupyter.ipynb` 用于演示和错误调试，`比利比利.ipynb` 为[ B 站视频](https://www.bilibili.com/video/BV1yU4y1B71P) 使用的代码。
+将仓库下载到本地，并切换到 demo 分支：
+
+```bash
+git clone https://github.com/RexWzh/rubik_cube.py.git
+cd rubik_cube.py
+git checkout rex/demo
+```
+
+跟随 demo 下的 Jupyter 文件进行演示，或者按下面的步骤进行操作。
 
 1. 打开浏览器插件，双击进入准备状态
    ![20220419174040](https://cdn.jsdelivr.net/gh/zhihongecnu/PicBed2/picgo/20220419174040.png)
@@ -103,8 +112,7 @@
 2. `demo` 目录下
    | 文件名 | 说明介绍 |
    | :---: | :-----: |
-   | `demo.jupyter` | 演示文档 |
-   | `quick_start.py` | 快捷调用|
+   | `demo-jupyter.ipynb` | Jupyter 演示文件 |
 
 ---
 
